@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<launch>
+  <arg name="paused" default="false" doc="Starts gazebo in paused mode" />
+  <arg name="gui" default="true" doc="Starts gazebo gui" />
+  <arg name="robot_name" default="edo" />
+  <arg name="upload_launch" default="$(find edo)/launch/edo_gripper_dummy_upload.launch"/>
+  <arg name="world_name" default="worlds/empty.world" />
+  <arg name="origin_xyz" default="'0 0 0'"/>
+  <arg name="origin_rpy" default="'0 0 0'"/>
+  <arg name="sim" default="true"/>
+  <arg name="debug" default="true"/>
+  <arg name="rviz" default="true"/>
+
+  <!-- startup simulated world -->
+  <include file="$(find edo)/launch/edo_gazebo.launch">
+    <arg name="paused" default="$(arg paused)"/>
+    <arg name="gui" value="$(arg gui)"/>
+    <arg name="robot_name" value="$(arg robot_name)"/>
+    <arg name="upload_launch" value="$(arg upload_launch)"/>
+    <arg name="world_name" default="$(arg world_name)"/>
+    <arg name="origin_xyz" value="$(arg origin_xyz)"/>
+    <arg name="origin_rpy" value="$(arg origin_rpy)"/>
+  </include>
+
+  <group ns="$(arg robot_name)">
+    <rosparam file="$(find edo)/controller/gripper_controller_edo.yaml" command="load"/>
+    <node name="edo_gripper_left_base_controller_spawner" pkg="controller_manager" type="spawner" args="edo_gripper_left_base_controller" respawn="false" output="screen"/>
+    <node name="edo_gripper_left_finger_controller_spawner" pkg="controller_manager" type="spawner" args="edo_gripper_left_finger_controller" respawn="false" output="screen"/>
+    <node name="edo_gripper_right_base_controller_spawner" pkg="controller_manager" type="spawner" args="edo_gripper_right_base_controller" respawn="false" output="screen"/>
+    <node name="edo_gripper_right_finger_controller_spawner" pkg="controller_manager" type="spawner" args="edo_gripper_right_finger_controller" respawn="false" output="screen"/>
+  </group>
+
+  <!-- Remap follow_joint_trajectory -->
+  <remap if="$(arg sim)" from="/follow_joint_trajectory" to="/$(arg robot_name)/arm_controller/follow_joint_trajectory"/>
+  
+  <!-- Launch MoveIt -->
+  <group ns="$(arg robot_name)">
+    <include file="$(find edo)/launch/move_group.launch">
+      <arg name="debug" default="$(arg debug)" />
+    </include>
+  </group>
+
+  <!-- Launch Rviz-->
+  <arg name="rviz_node_start_delay" default="10.0" />  
+  <arg name="command_args" value="-d $(find edo)/launch/moveit.rviz" />
+  <!-- Launch w/ delay so that all needed stuff gets initialized before launching Rviz -->
+  <group ns="$(arg robot_name)">
+    <node if="$(arg rviz)" name="$(anon rviz)" pkg="rviz" type="rviz" launch-prefix="bash -c 'sleep $(arg rviz_node_start_delay); $0 $@' "  respawn="false" args="$(arg command_args)"  output="screen">
+      <rosparam command="load" file="$(find edo)/config/kinematics.yaml"/>
+    </node>
+  </group>
+
+  <!-- Launch main node
+  <arg name="node_start_delay" default="10.0" />  
+  <node name="edo_move_group_interface" pkg="edo" type="main.py" launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' "  respawn="false" output="screen"/> -->
+</launch>
