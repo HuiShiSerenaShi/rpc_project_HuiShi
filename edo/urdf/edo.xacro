@@ -14,13 +14,40 @@
     <xacro:property name="max_velocity" value="1.5"/>
     <xacro:property name="robot_prefix" value="edo"/>
 
+    <xacro:property name="table_offset" value="0.05"/>
+
     <xacro:macro name="edo" params="parent hardware_interface robot_name *origin">
 
-        <!--joint between {parent} and base_link-->
+        <!--joint between {parent} and table_link-->
         <joint name="${parent}_${robot_name}_joint" type="fixed">
             <xacro:insert_block name="origin"/>
             <parent link="${parent}"/>
+            <child link="${robot_prefix}_table_link"/>
+        </joint>
+
+        <link name="${robot_prefix}_table_link">
+            <visual>
+                <origin xyz="0 0 0.05" rpy="0 0 0"/>
+                <geometry>
+                    <box size="1 1 ${table_offset}"/>
+                </geometry>
+            </visual>
+
+            <collision>
+                <origin xyz="0 0 0.05" rpy="0 0 0"/>
+                <geometry>
+                    <box size="1 1 ${table_offset}"/>
+                </geometry>
+                <material name="Grey"/>
+            </collision>
+
+        </link>
+
+        <!--joint between table_link and base_link-->
+        <joint name="${robot_name}_joint0" type="fixed">
+            <parent link="${robot_prefix}_table_link"/>
             <child link="${robot_prefix}_base_link"/>
+            <origin xyz="0 0 ${table_offset}" rpy="0 0 0"/>
         </joint>
 
         <link name="${robot_prefix}_base_link">
