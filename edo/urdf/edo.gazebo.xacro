@@ -12,43 +12,48 @@
         </gazebo>
 
         <!-- Link0 -->
-        <gazebo reference="${robot_prefix}_base_link">
+        <gazebo reference="${robot_prefix}_table_link">
             <mu1>0.2</mu1>
             <mu2>0.2</mu2>
         </gazebo>
 
         <!-- Link1 -->
-        <gazebo reference="${robot_prefix}_link_1">
+        <gazebo reference="${robot_prefix}_base_link">
             <mu1>0.2</mu1>
             <mu2>0.2</mu2>
         </gazebo>
 
         <!-- Link2 -->
-        <gazebo reference="${robot_prefix}_link_2">
+        <gazebo reference="${robot_prefix}_link_1">
             <mu1>0.2</mu1>
             <mu2>0.2</mu2>
         </gazebo>
 
         <!-- Link3 -->
+        <gazebo reference="${robot_prefix}_link_2">
+            <mu1>0.2</mu1>
+            <mu2>0.2</mu2>
+        </gazebo>
+
+        <!-- Link4 -->
         <gazebo reference="${robot_prefix}_link_3">
             <mu1>0.2</mu1>
             <mu2>0.2</mu2>
         </gazebo>
 
-
-        <!-- Link4 -->
+        <!-- Link5 -->
         <gazebo reference="${robot_prefix}_link_4">
             <mu1>0.2</mu1>
             <mu2>0.2</mu2>
         </gazebo>
 
-        <!-- Link5 -->
+        <!-- Link6 -->
         <gazebo reference="${robot_prefix}_link_5">
             <mu1>0.2</mu1>
             <mu2>0.2</mu2>
         </gazebo>
 
-        <!-- Link6 -->
+        <!-- Link7 -->
         <gazebo reference="${robot_prefix}_link_6">
             <mu1>0.2</mu1>
             <mu2>0.2</mu2>
