@@ -4,6 +4,8 @@
     <xacro:include filename="$(find edo)/urdf/materials.xacro" />
     <!--Import the edo macro -->
     <xacro:include filename="$(find edo)/urdf/edo.xacro"/>
+    <!--Import the box macro -->
+    <xacro:include filename="$(find edo)/urdf/pick_box.xacro"/>
 
     <xacro:arg name="hardware_interface" default="hardware_interface/PositionJointInterface"/>
     <xacro:arg name="robot_name" default="edo"/>
@@ -20,5 +22,6 @@
     <xacro:edo hardware_interface="$(arg hardware_interface)" robot_name="$(arg robot_name)" parent="world">
         <origin xyz="$(arg origin_xyz)" rpy="$(arg origin_rpy)" />
     </xacro:edo>
+
 
 </robot>
