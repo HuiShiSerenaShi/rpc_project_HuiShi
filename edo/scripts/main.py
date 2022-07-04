@@ -266,8 +266,8 @@ class EdoMoveGroupInterface(object):
         print("s - Select next joint")
         print(f"a - Decrement the selected joint by {self.joint_step} rad")
         print(f"d - Increment the selected joint by {self.joint_step} rad")
-        print("q - Close the gripper (not yet implemented)")
-        print("e - Open the gripper (not yet implemented)")
+        print("q - Close the gripper")
+        print("e - Open the gripper")
         print("h - Go to home position")
         print("pj - Print current joint state")
         print("pc - Print current pose")
@@ -275,7 +275,7 @@ class EdoMoveGroupInterface(object):
         print("t - Execute demonstration cartesian trajectory")
         print("---------------------------------------------")
         while True:
-            m = input().lower()
+            m = input("> ").lower()
             if m == 'w':
                 # Select previous joint
                 self.current_joint = 5 if self.current_joint == 0 else self.current_joint - 1
