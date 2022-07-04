@@ -11,7 +11,7 @@
   <arg name="debug" default="true"/>
   <arg name="rviz" default="false"/>
 
-  <!-- startup simulated world -->
+  <!-- Startup simulated world -->
   <include file="$(find edo)/launch/edo_gazebo.launch">
     <arg name="paused" default="$(arg paused)"/>
     <arg name="gui" value="$(arg gui)"/>
@@ -22,6 +22,7 @@
     <arg name="origin_rpy" value="$(arg origin_rpy)"/>
   </include>
 
+  <!-- Initialize the gripper controllers -->
   <group ns="$(arg robot_name)">
     <rosparam file="$(find edo)/controller/gripper_controller_edo.yaml" 
               command="load"/>
@@ -51,7 +52,7 @@
           output="screen"/>
   </group>
 
-  <!-- Remap follow_joint_trajectory -->
+  <!-- Remap follow_joint_trajectory - needed for Gazebo-->
   <remap if="$(arg sim)" 
         from="/follow_joint_trajectory" 
         to="/$(arg robot_name)/arm_controller/follow_joint_trajectory"/>

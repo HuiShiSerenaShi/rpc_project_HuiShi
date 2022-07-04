@@ -67,20 +67,28 @@ class EdoMoveGroupInterface(object):
         rospy.loginfo(f"Current state:\n{self.state}")
 
     def go_to_joint_state(self, joint_goal):
+        # Pass a joint state for the move group to go to
         self.edo_move_group.go(joint_goal, wait=True)
+        # Force the robot to stop moving in case there's residual motion
         self.edo_move_group.stop()
+        # Check accuracy
         current_joints = self.edo_move_group.get_current_joint_values()
         return self.all_close(joint_goal, current_joints, 0.01)
 
     def go_home(self):
+        # Go to home position and close the gripper
         self.go_to_joint_state([0, 0, 0, 0, 0, 0])
         self.set_gripper_span(0.0)
 
     def go_to_pose_goal(self, pose_goal):
+        # Pass a pose for the move group to go to
         self.edo_move_group.set_pose_target(pose_goal)
         self.edo_move_group.go(wait=True)
+        # Force the robot to stop moving in case there's residual motion
         self.edo_move_group.stop()
+        # Clear the pose target just in case
         self.edo_move_group.clear_pose_targets()
+        # Check accuracy
         current_pose = self.edo_move_group.get_current_pose().pose
         return self.all_close(pose_goal, current_pose, 0.01)
 
@@ -89,16 +97,19 @@ class EdoMoveGroupInterface(object):
         waypoints = []
         for pose in poses:
             waypoints.append(copy.deepcopy(pose))
+        # Generate a motion plan from the list of poses
         (plan, fraction) = self.edo_move_group.compute_cartesian_path(waypoints, 0.01, 0.0)
         return plan, fraction
 
     def display_trajectory(self, plan):
+        # Publish the trajectory for rviz to display
         display_trajectory = DisplayTrajectory()
         display_trajectory.trajectory_start = self.robot.get_current_state()
         display_trajectory.trajectory.append(plan)
         self.display_trajectory_publisher.publish(display_trajectory)
 
     def execute_plan(self, plan):
+        # Execute a precomputed motion plan
         self.edo_move_group.execute(plan, wait=True)
 
     def wait_for_state_update(self, box_is_known=False, box_is_attached=False, timeout=4):
@@ -117,12 +128,15 @@ class EdoMoveGroupInterface(object):
         return False
 
     def add_box(self, timeout=4):
+        # Get the package's path
         rospack = rospkg.RosPack()
         box_urdf_path = os.path.join(rospack.get_path('edo'), 'urdf/box.urdf')
+        # COntact Gazebo's spawn_urdf_model service
         rospy.wait_for_service("/gazebo/spawn_urdf_model", timeout=timeout)
         spawn_model = rospy.ServiceProxy("/gazebo/spawn_urdf_model", SpawnModel)
         with open(box_urdf_path, "r") as f:
             box_urdf = f.read()
+        # Set up the pose for the pickable box
         box_pose = Pose()
         box_pose.position.x = 0.4
         box_pose.position.y = 0.0
@@ -131,29 +145,34 @@ class EdoMoveGroupInterface(object):
         box_pose.orientation.y = 0.0
         box_pose.orientation.z = 0.0
         box_pose.orientation.w = 1.0
+        # Spawn the box in the world
         spawn_model("box", box_urdf, "edo",   box_pose, "world")
         self.box_pose_stamped = PoseStamped()
         self.box_pose_stamped.header.frame_id = "world"
         self.box_pose_stamped.pose = box_pose
+        # Add the box to the planning scene (TODO: needed?)
         self.scene.add_box(self.box_name, self.box_pose_stamped, size=(0.025, 0.025, 0.025))
-        print(self.wait_for_state_update(box_is_known=True, timeout=timeout))
+        return self.wait_for_state_update(box_is_known=True, timeout=timeout)
 
     def attach_box(self, timeout=4):
+        # Tell the planning scene that the box is attached to the ee (TODO: needed?)
         grasping_group = "edo_gripper"
         touch_links = self.robot.get_link_names(group=grasping_group)
         self.scene.attach_box(self.eef_link, self.box_name, touch_links=touch_links)
         return self.wait_for_state_update(box_is_attached=True, box_is_known=False, timeout=timeout)
 
     def detach_box(self, timeout=4):
+        # Tell the planning scene that the box is detached from the ee (TODO: needed?)
         self.scene.remove_attached_object(self.eef_link, name=self.box_name)
         print(self.wait_for_state_update(box_is_known=True, box_is_attached=False, timeout=timeout))
 
     def set_gripper_span(self, span):
+        # Publish the desired gripper width
         msg = Float32()
         msg.data = span
         self.gripper_span_pub.publish(msg)
         # Ensures that the gripper actually finishes moving
-        # TODO: this would best be implemented with an action rather than a sleep
+        # TODO: this would best be implemented as an action rather than a sleep
         rospy.sleep(1)
 
     def all_close(self, goal, actual, tolerance):
@@ -190,6 +209,7 @@ class EdoMoveGroupInterface(object):
         return [round(l, digits) for l in list]
 
     def cartesian(self):
+        # Plan and execute thhe demonstration cartesian traj
         p1 = Pose()
         p1.position.x = 0.1781872233813927
         p1.position.y = 0.48339276316996005
@@ -226,7 +246,6 @@ class EdoMoveGroupInterface(object):
         rospy.sleep(wait_between_waypoints)
         self.go_to_joint_state(pick_joint_state if not self.pnp_executed else place_joint_state)
         self.set_gripper_span(0.02)
-        #self.attach_box() 
         rospy.sleep(wait_between_waypoints)
         self.go_to_joint_state(waypoint_joint_state)
         rospy.sleep(wait_between_waypoints)
@@ -234,7 +253,6 @@ class EdoMoveGroupInterface(object):
         rospy.sleep(wait_between_waypoints)
         self.go_to_joint_state(place_joint_state if not self.pnp_executed else pick_joint_state)
         self.set_gripper_span(0.9)
-        #self.detach_box() 
         rospy.sleep(wait_between_waypoints)
         self.go_home()
         self.pnp_executed = not self.pnp_executed

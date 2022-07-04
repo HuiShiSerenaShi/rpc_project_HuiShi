@@ -26,9 +26,11 @@ class EdoGripperControl(object):
         rospy.loginfo("Initialized EdoGripperControl.")
 
     def update(self):
+        # Actually publish the desired span to the gripper topic
         msg = Float32()
         msg.data = self.current_span
         self.gripper_span_pub.publish(msg)
+        # This keeps track of the state of the gripper (TODO: this is useless unless implemented via an action)
         self.gripper_moving = abs(self.current_span - self.desired_span) > 0.001
         if self.gripper_moving:
             self.set_gripper_span(self.desired_span)
@@ -37,12 +39,14 @@ class EdoGripperControl(object):
         self.gripper_state_pub.publish(state_msg)
 
     def on_set_gripper_span_msg(self, msg: Float32):
+        # Sanity check on the given span
         if msg.data <= 0:
             self.desired_span = 0
         elif msg.data >= 0.08:
             self.desired_span = 0.08
         else:
             self.desired_span = msg.data
+        # Move the gripper to the desired span
         self.set_gripper_span(self.desired_span)
 
     def on_joint_state_msg(self, msg: JointState):
@@ -56,6 +60,7 @@ class EdoGripperControl(object):
         if not found:
             rospy.logwarn("The joint state message does not contain 'edo_gripper_left_base_joint")
             return
+        # Geometric conversions
         base_angle = (base_angle / pi) * 180.0
         self.current_span = (-(base_angle - 29.72)/0.7428) / 1000
 
@@ -83,6 +88,7 @@ class EdoGripperControl(object):
 
 def main():
     egc = EdoGripperControl()
+    # 10Hz control loop
     rate = rospy.Rate(10)
     try:
         while True:
