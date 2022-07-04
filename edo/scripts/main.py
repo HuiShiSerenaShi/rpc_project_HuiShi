@@ -3,17 +3,20 @@
 import copy
 import moveit_commander
 import os
+import roslib; roslib.load_manifest('urdfdom_py')
+import rospkg
 import rospy
 import sys
 import threading
 
-
+from gazebo_msgs.srv import SpawnModel
 from geometry_msgs.msg import Pose, PoseStamped
 from math import pi, dist, fabs, cos
 from moveit_commander import RobotCommander, PlanningSceneInterface, MoveGroupCommander
 from moveit_commander.conversions import pose_to_list
 from moveit_msgs.msg import DisplayTrajectory
-from std_msgs.msg import String
+from std_msgs.msg import Float32, String
+from urdf_parser_py.urdf import URDF
 
 class EdoMoveGroupInterface(object):
 
@@ -27,11 +30,13 @@ class EdoMoveGroupInterface(object):
         self.robot = RobotCommander()
         # Handling of robot - scene interaction
         self.scene = PlanningSceneInterface()
-
+        
         # Handling of trajectory generation and following
         group_name = "edo"
-        self.move_group = MoveGroupCommander(group_name)
-
+        self.edo_move_group = MoveGroupCommander(group_name)
+        group_name = "edo_gripper"
+        self.gripper_move_group = MoveGroupCommander(group_name)
+        
         # Publishes the ghost trajectory for Rviz
         self.display_trajectory_publisher = rospy.Publisher(
             "/move_group/display_planned_path",
@@ -39,12 +44,16 @@ class EdoMoveGroupInterface(object):
             queue_size=20,
         )
 
+        # Gripper controller publisher
+        self.gripper_span_pub = rospy.Publisher("set_gripper_span", Float32, queue_size=10)
+
         # Misc class attributes
-        self.planning_frame = self.move_group.get_planning_frame()
-        self.eef_link = self.move_group.get_end_effector_link()
+        self.planning_frame = self.edo_move_group.get_planning_frame()
+        self.eef_link = self.edo_move_group.get_end_effector_link()
         self.group_names = self.robot.get_group_names()
         self.state = self.robot.get_current_state()
         self.box_name = "box"
+        self.box_pose_stamped = PoseStamped()
         # Keeps track of where to pick the demonstration object
         self.pnp_executed = False
         # Current joint (0-6) for manual control
@@ -58,20 +67,21 @@ class EdoMoveGroupInterface(object):
         rospy.loginfo(f"Current state:\n{self.state}")
 
     def go_to_joint_state(self, joint_goal):
-        self.move_group.go(joint_goal, wait=True)
-        self.move_group.stop()
-        current_joints = self.move_group.get_current_joint_values()
+        self.edo_move_group.go(joint_goal, wait=True)
+        self.edo_move_group.stop()
+        current_joints = self.edo_move_group.get_current_joint_values()
         return self.all_close(joint_goal, current_joints, 0.01)
 
     def go_home(self):
         self.go_to_joint_state([0, 0, 0, 0, 0, 0])
+        self.set_gripper_span(0.0)
 
     def go_to_pose_goal(self, pose_goal):
-        self.move_group.set_pose_target(pose_goal)
-        self.move_group.go(wait=True)
-        self.move_group.stop()
-        self.move_group.clear_pose_targets()
-        current_pose = self.move_group.get_current_pose().pose
+        self.edo_move_group.set_pose_target(pose_goal)
+        self.edo_move_group.go(wait=True)
+        self.edo_move_group.stop()
+        self.edo_move_group.clear_pose_targets()
+        current_pose = self.edo_move_group.get_current_pose().pose
         return self.all_close(pose_goal, current_pose, 0.01)
 
     def plan_cartesian_path(self, poses):
@@ -79,7 +89,7 @@ class EdoMoveGroupInterface(object):
         waypoints = []
         for pose in poses:
             waypoints.append(copy.deepcopy(pose))
-        (plan, fraction) = self.move_group.compute_cartesian_path(waypoints, 0.01, 0.0)
+        (plan, fraction) = self.edo_move_group.compute_cartesian_path(waypoints, 0.01, 0.0)
         return plan, fraction
 
     def display_trajectory(self, plan):
@@ -89,7 +99,7 @@ class EdoMoveGroupInterface(object):
         self.display_trajectory_publisher.publish(display_trajectory)
 
     def execute_plan(self, plan):
-        self.move_group.execute(plan, wait=True)
+        self.edo_move_group.execute(plan, wait=True)
 
     def wait_for_state_update(self, box_is_known=False, box_is_attached=False, timeout=4):
         # Wait for the reflection of changes to the known object and attached object lists
@@ -107,14 +117,26 @@ class EdoMoveGroupInterface(object):
         return False
 
     def add_box(self, timeout=4):
-        box_pose = PoseStamped()
-        box_pose.header.frame_id = self.planning_frame
-        box_pose.pose.orientation.w = 1.0
-        box_pose.pose.position.x = 0.0
-        box_pose.pose.position.y = 0.4
-        box_pose.pose.position.z = 0.087
-        self.scene.add_box(self.box_name, box_pose, size=(0.075, 0.075, 0.075))
-        return self.wait_for_state_update(box_is_known=True, timeout=timeout)
+        rospack = rospkg.RosPack()
+        box_urdf_path = os.path.join(rospack.get_path('edo'), 'urdf/box.urdf')
+        rospy.wait_for_service("/gazebo/spawn_urdf_model", timeout=timeout)
+        spawn_model = rospy.ServiceProxy("/gazebo/spawn_urdf_model", SpawnModel)
+        with open(box_urdf_path, "r") as f:
+            box_urdf = f.read()
+        box_pose = Pose()
+        box_pose.position.x = 0.4
+        box_pose.position.y = 0.0
+        box_pose.position.z = 0.087
+        box_pose.orientation.x = 0.0
+        box_pose.orientation.y = 0.0
+        box_pose.orientation.z = 0.0
+        box_pose.orientation.w = 1.0
+        spawn_model("box", box_urdf, "edo",   box_pose, "world")
+        self.box_pose_stamped = PoseStamped()
+        self.box_pose_stamped.header.frame_id = "world"
+        self.box_pose_stamped.pose = box_pose
+        self.scene.add_box(self.box_name, self.box_pose_stamped, size=(0.025, 0.025, 0.025))
+        print(self.wait_for_state_update(box_is_known=True, timeout=timeout))
 
     def attach_box(self, timeout=4):
         grasping_group = "edo_gripper"
@@ -124,7 +146,15 @@ class EdoMoveGroupInterface(object):
 
     def detach_box(self, timeout=4):
         self.scene.remove_attached_object(self.eef_link, name=self.box_name)
-        return self.wait_for_state_update(box_is_known=True, box_is_attached=False, timeout=timeout)
+        print(self.wait_for_state_update(box_is_known=True, box_is_attached=False, timeout=timeout))
+
+    def set_gripper_span(self, span):
+        msg = Float32()
+        msg.data = span
+        self.gripper_span_pub.publish(msg)
+        # Ensures that the gripper actually finishes moving
+        # TODO: this would best be implemented with an action rather than a sleep
+        rospy.sleep(1)
 
     def all_close(self, goal, actual, tolerance):
         """
@@ -159,27 +189,53 @@ class EdoMoveGroupInterface(object):
         # Utility method to round all the elements of a list
         return [round(l, digits) for l in list]
 
+    def cartesian(self):
+        p1 = Pose()
+        p1.position.x = 0.1781872233813927
+        p1.position.y = 0.48339276316996005
+        p1.position.z = 0.13659942218845122 
+        p1.orientation.x = -0.6703908630240593
+        p1.orientation.y = 0.7375574153598073
+        p1.orientation.z = 0.06883179458404497
+        p1.orientation.w = 0.04298062209830564
+        p2 = Pose()
+        p2.position.x = -0.11934454844131838
+        p2.position.y = 0.510805482122449
+        p2.position.z = 0.14971139249189303
+        p2.orientation.x = -0.6702984352405627
+        p2.orientation.y = 0.7376399124800481
+        p2.orientation.z = 0.06882664670682606
+        p2.orientation.w = 0.04301464789549873
+        p = [p1, p2]
+        self.go_to_pose_goal(p1)
+        (plan, fraction) = self.plan_cartesian_path(p)
+        self.execute_plan(plan)
+
     def pick_and_place(self):
         # Demonstration pick and place trajectory
-        pick_approach = [1.528, 0.73, 1.267, 0.091, 1.078, 0.719]
-        pick_joint_state = [1.528, 0.907, 1.265, 0.091, 0.899, 0.719]
-        waypoint_joint_state = [0.54, 1.083, 0.102, -0.0, 0.989, 0.63]
-        place_approach = [-0.001, 0.905, 1.083, -0.0, 1.17, -0.0]
-        place_joint_state = [-0.001, 1.176, 0.814, 0.0, 1.169, 0.0]
+        pick_approach = [-0.010911190911310875, 0.9517952526784494, 1.0944452943478726, 0.019684740760639308, 1.1300822318508716, 0.6406438530178793]
+        pick_joint_state = [-0.01089727417424946, 1.0242467411297334, 1.094712739209256, 0.01984789651120966, 1.0578107180909413, 0.6405495454717895]
+        waypoint_joint_state = [0.4206274075846954, 0.3832774887285968, 1.1000825894037467, 0.019617415711204345, 1.057231879761889, 0.6405168420719409]
+        place_approach = [1.5869587990376077, 1.257392829347598, 0.3341822557692531, 0.021794601966520055, 1.4828269594223187, 0.7675031198387039]
+        place_joint_state = [1.5858523728679126, 1.4603561921661043, 0.10485557931239509, 0.02074594471888247, 1.5325062824100204, 0.7665689171974392]
+        wait_between_waypoints = 1
         self.go_home()
-        rospy.sleep(3)
+        rospy.sleep(wait_between_waypoints)
         self.go_to_joint_state(pick_approach if not self.pnp_executed else place_approach)
-        rospy.sleep(3)
+        self.set_gripper_span(0.9)
+        rospy.sleep(wait_between_waypoints)
         self.go_to_joint_state(pick_joint_state if not self.pnp_executed else place_joint_state)
-        self.attach_box()
-        rospy.sleep(3)
+        self.set_gripper_span(0.02)
+        #self.attach_box() 
+        rospy.sleep(wait_between_waypoints)
         self.go_to_joint_state(waypoint_joint_state)
-        rospy.sleep(3)
+        rospy.sleep(wait_between_waypoints)
         self.go_to_joint_state(place_approach if not self.pnp_executed else pick_approach)
-        rospy.sleep(3)
+        rospy.sleep(wait_between_waypoints)
         self.go_to_joint_state(place_joint_state if not self.pnp_executed else pick_joint_state)
-        self.detach_box()
-        rospy.sleep(3)
+        self.set_gripper_span(0.9)
+        #self.detach_box() 
+        rospy.sleep(wait_between_waypoints)
         self.go_home()
         self.pnp_executed = not self.pnp_executed
 
@@ -195,69 +251,75 @@ class EdoMoveGroupInterface(object):
         print("q - Close the gripper (not yet implemented)")
         print("e - Open the gripper (not yet implemented)")
         print("h - Go to home position")
-        print("p - Print current joint state")
+        print("pj - Print current joint state")
+        print("pc - Print current pose")
         print("r - Execute demonstration pick and place trajectory")
         print("t - Execute demonstration cartesian trajectory")
         print("---------------------------------------------")
         while True:
-            menu = input().lower()
-            for m in menu:
-                if m == 'w':
-                    # Select previous joint
-                    self.current_joint = 5 if self.current_joint == 0 else self.current_joint - 1
-                    rospy.loginfo(f"Joint {self.current_joint} selected.")
-                elif m == 's':
-                    # Select next joint
-                    self.current_joint = 0 if self.current_joint == 5 else self.current_joint + 1     
-                    rospy.loginfo(f"Joint {self.current_joint} selected.")
-                elif m == 'a':
-                    # Decrement current joint value
-                    joint_goal = self.move_group.get_current_joint_values()      
-                    joint_goal[self.current_joint] -= self.joint_step
-                    rospy.loginfo(f"New target joint state:\n{self.round_list(joint_goal)}")
-                    self.go_to_joint_state(joint_goal)
-                elif m == 'd':
-                    # Increment current joint value
-                    joint_goal = self.move_group.get_current_joint_values()      
-                    joint_goal[self.current_joint] += self.joint_step
-                    rospy.loginfo(f"New target joint state:\n{self.round_list(joint_goal)}")
-                    self.go_to_joint_state(joint_goal)
-                elif m == 'h':
-                    # Go to home position
-                    self.go_home()
-                    rospy.loginfo("Executed homing.")
-                elif m == 'p':
-                    # Print joint state
-                    rospy.loginfo(f"Current joint state:\n{self.move_group.get_current_joint_values()}")
-                elif m == 'r':
-                    # Execute pick and place
-                    rospy.loginfo(f"Executing demonstration pick and place trajectory.")
-                    self.pick_and_place() 
-                elif m == 't':
-                    # Execute cartesian trajectory
-                    rospy.loginfo(f"Executing demonstration cartesian trajectory.")
-                elif m == 'q':
-                    # Close the gripper
-                    rospy.loginfo(f"Closing the gripper.")
-                elif m == 'e':
-                    # Open the gripper
-                    rospy.loginfo(f"Opening the gripper.")
-                elif m == 'k':
-                    # Stop key received, kill everything
-                    self.move_group.stop()
-                    rospy.loginfo("Stop key received, stopping...")
-                    rospy.signal_shutdown("Stop key received.")
-                    os._exit(os.EX_OK)
-                else:
-                    rospy.loginfo("Unknown key received.")
+            m = input().lower()
+            if m == 'w':
+                # Select previous joint
+                self.current_joint = 5 if self.current_joint == 0 else self.current_joint - 1
+                rospy.loginfo(f"Joint {self.current_joint} selected.")
+            elif m == 's':
+                # Select next joint
+                self.current_joint = 0 if self.current_joint == 5 else self.current_joint + 1     
+                rospy.loginfo(f"Joint {self.current_joint} selected.")
+            elif m == 'a':
+                # Decrement current joint value
+                joint_goal = self.edo_move_group.get_current_joint_values()      
+                joint_goal[self.current_joint] -= self.joint_step
+                rospy.loginfo(f"New target joint state:\n{self.round_list(joint_goal)}")
+                self.go_to_joint_state(joint_goal)
+            elif m == 'd':
+                # Increment current joint value
+                joint_goal = self.edo_move_group.get_current_joint_values()      
+                joint_goal[self.current_joint] += self.joint_step
+                rospy.loginfo(f"New target joint state:\n{self.round_list(joint_goal)}")
+                self.go_to_joint_state(joint_goal)
+            elif m == 'h':
+                # Go to home position
+                self.go_home()
+                rospy.loginfo("Executed homing.")
+            elif m == 'pj':
+                # Print joint state
+                rospy.loginfo(f"Current joint state:\n{self.edo_move_group.get_current_joint_values()}")
+            elif m == 'pc':
+                # Print pose
+                rospy.loginfo(f"Current pose:\n{self.edo_move_group.get_current_pose()}")
+            elif m == 'r':
+                # Execute pick and place
+                rospy.loginfo(f"Executing demonstration pick and place trajectory.")
+                self.pick_and_place() 
+            elif m == 't':
+                # Execute cartesian trajectory
+                rospy.loginfo(f"Executing demonstration cartesian trajectory.")
+                self.cartesian()
+            elif m == 'q':
+                # Close the gripper
+                rospy.loginfo(f"Closing the gripper.")
+                self.set_gripper_span(0.025)
+            elif m == 'e':
+                # Open the gripper
+                rospy.loginfo(f"Opening the gripper.")
+                self.set_gripper_span(0.9)
+            elif m == 'k':
+                # Stop key received, kill everything
+                self.edo_move_group.stop()
+                rospy.loginfo("Stop key received, stopping...")
+                rospy.signal_shutdown("Stop key received.")
+                os._exit(os.EX_OK)
+            else:
+                rospy.loginfo("Unknown key received.")
 
 def main():
     try:
         # Initialize move group
         mg = EdoMoveGroupInterface()
-        mg.add_box()
         # Execute homing
         mg.go_home()
+        mg.add_box()
         # Start keyboard handling thread
         th = threading.Thread(target=mg.handle_keyboard)
         th.start()

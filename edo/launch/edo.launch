@@ -23,19 +23,38 @@
   </include>
 
   <group ns="$(arg robot_name)">
-    <rosparam file="$(find edo)/controller/gripper_controller_edo.yaml" command="load"/>
-    <node name="edo_gripper_left_base_controller_spawner" pkg="controller_manager" 
-          type="spawner" args="edo_gripper_left_base_controller" respawn="false" output="screen"/>
-    <node name="edo_gripper_left_finger_controller_spawner" pkg="controller_manager" 
-          type="spawner" args="edo_gripper_left_finger_controller" respawn="false" output="screen"/>
-    <node name="edo_gripper_right_base_controller_spawner" pkg="controller_manager" 
-          type="spawner" args="edo_gripper_right_base_controller" respawn="false" output="screen"/>
-    <node name="edo_gripper_right_finger_controller_spawner" pkg="controller_manager" 
-          type="spawner" args="edo_gripper_right_finger_controller" respawn="false" output="screen"/>
+    <rosparam file="$(find edo)/controller/gripper_controller_edo.yaml" 
+              command="load"/>
+    <node name="edo_gripper_left_base_controller_spawner" 
+          pkg="controller_manager" 
+          type="spawner" 
+          args="edo_gripper_left_base_controller" 
+          respawn="false" 
+          output="screen"/>
+    <node name="edo_gripper_left_finger_controller_spawner" 
+          pkg="controller_manager" 
+          type="spawner" 
+          args="edo_gripper_left_finger_controller" 
+          respawn="false" 
+          output="screen"/>
+    <node name="edo_gripper_right_base_controller_spawner" 
+          pkg="controller_manager" 
+          type="spawner" 
+          args="edo_gripper_right_base_controller" 
+          respawn="false" 
+          output="screen"/>
+    <node name="edo_gripper_right_finger_controller_spawner" 
+          pkg="controller_manager" 
+          type="spawner" 
+          args="edo_gripper_right_finger_controller" 
+          respawn="false" 
+          output="screen"/>
   </group>
 
   <!-- Remap follow_joint_trajectory -->
-  <remap if="$(arg sim)" from="/follow_joint_trajectory" to="/$(arg robot_name)/arm_controller/follow_joint_trajectory"/>
+  <remap if="$(arg sim)" 
+        from="/follow_joint_trajectory" 
+        to="/$(arg robot_name)/arm_controller/follow_joint_trajectory"/>
   
   <!-- Launch MoveIt -->
   <group ns="$(arg robot_name)">
@@ -45,7 +64,7 @@
   </group>
 
   <!-- Launch Rviz-->
-  <arg name="rviz_node_start_delay" default="15.0" />  
+  <arg name="rviz_node_start_delay" default="10.0" />  
   <arg name="command_args" value="-d $(find edo)/launch/moveit.rviz" />
   <!-- Launch w/ delay so that all needed stuff gets initialized before launching Rviz -->
   <group ns="$(arg robot_name)">
@@ -56,7 +75,11 @@
     </node>
   </group>
 
-  <!-- Launch main node
+  <!-- Launch gripper controller node -->
   <arg name="node_start_delay" default="10.0" />  
-  <node name="edo_move_group_interface" pkg="edo" type="main.py" launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' "  respawn="false" output="screen"/> -->
+  <group ns="$(arg robot_name)">
+    <node name="edo_gripper_controller_node" pkg="edo" type="edo_gripper_node.py" 
+          launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' "  
+          respawn="false" output="screen"/>
+  </group>
 </launch>

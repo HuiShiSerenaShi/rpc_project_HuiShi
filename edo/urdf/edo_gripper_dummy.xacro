@@ -236,12 +236,12 @@
                     <gripper_link>${robot_prefix}_gripper_left_finger_link</gripper_link>
                     <gripper_link>${robot_prefix}_gripper_right_finger_link</gripper_link>
                 </arm>
-                <forces_angle_tolerance>0</forces_angle_tolerance>
+                <forces_angle_tolerance>90</forces_angle_tolerance>
                 <update_rate>16</update_rate>
-                <grip_count_threshold>2</grip_count_threshold>
-                <max_grip_count>3</max_grip_count>
-                <release_tolerance>0.0005</release_tolerance>
-                <disable_collisions_on_attach>false</disable_collisions_on_attach>
+                <grip_count_threshold>1</grip_count_threshold>
+                <max_grip_count>8</max_grip_count>
+                <release_tolerance>0.005</release_tolerance>
+                <disable_collisions_on_attach>true</disable_collisions_on_attach>
                 <contact_topic>__default_topic__</contact_topic>
             </plugin>
         </gazebo>

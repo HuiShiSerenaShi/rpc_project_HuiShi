@@ -193,11 +193,6 @@ Visualization Manager:
           Expand Link Details: false
           Expand Tree: false
           Link Tree Style: Links in Alphabetic Order
-          box:
-            Alpha: 1
-            Show Axes: false
-            Show Trail: false
-            Value: true
           edo_base_link:
             Alpha: 1
             Show Axes: false
