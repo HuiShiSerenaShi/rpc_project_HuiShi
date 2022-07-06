@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<robot name="sphere">
+  <link name="sphere">
+    <inertial>
+      <mass value="1.0"/>
+      <inertia ixx="1"
+                 iyy="1"
+                 izz="1"
+                 ixy="0" iyz="0" ixz="0"/>
+    </inertial>
+    <visual>
+      <geometry>
+        <sphere radius="0.0125"/>
+      </geometry>
+    </visual>
+    <collision>
+      <geometry>
+        <sphere radius="0.0125"/>
+      </geometry>
+    </collision>
+  </link>
+</robot>

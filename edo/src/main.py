@@ -9,7 +9,7 @@ import rospy
 import sys
 import threading
 
-from gazebo_msgs.srv import SpawnModel
+from gazebo_msgs.srv import SpawnModel, DeleteModel
 from geometry_msgs.msg import Pose, PoseStamped
 from math import pi, dist, fabs, cos
 from moveit_commander import RobotCommander, PlanningSceneInterface, MoveGroupCommander
@@ -81,10 +81,11 @@ class EdoMoveGroupInterface(object):
             "X" : [ 0.295, -0.405],
             "Y" : [ 0.155, -0.475],
             "Z" : [ 0.000, -0.500],
+            "M" : [ 0.400, 0.000]
         }
 
         # For pick and place demonstration
-        self.pick_target = "V"
+        self.pick_target = "M"
         self.place_target = "F"
 
         rospy.loginfo("Initialized edo MoveGroupInterface:")
@@ -175,6 +176,7 @@ class EdoMoveGroupInterface(object):
                 return True
             rospy.sleep(0.1)
             seconds = rospy.get_time()
+        self.scene.remove_world_object()
         return False
 
     def set_gripper_span(self, span):
@@ -220,18 +222,18 @@ class EdoMoveGroupInterface(object):
         return [round(l, digits) for l in list]
 
     def pick_and_place(self):
-        offset = 1.57 / 2 if self.pick_target in ["S", "T", "U", "V"] else 0
-        self.go_to_xyz_rpy(self.pick_target, 1.7, [3.14, 0, -3.14 + offset])
+        deg_to_rad = pi / 180.0
+        self.go_to_xyz_rpy([0.4, 0.0], 1.653, [180 * deg_to_rad, 0.0 , 45 * deg_to_rad])
         self.set_gripper_span(0.09)
         rospy.sleep(2)
-        self.go_to_xyz_rpy(self.pick_target, 1.63, [3.14, 0, -3.14 + offset])
+        self.go_to_xyz_rpy([0.4, 0.0], 1.625, [180 * deg_to_rad, 0.0 * deg_to_rad, 45 * deg_to_rad])
         self.set_gripper_span(0.0245)
         rospy.sleep(2)
-        self.go_to_xyz_rpy(self.pick_target, 1.7, [3.14, 0, -3.14 + offset])
+        self.go_to_xyz_rpy([0.4, 0.0], 1.653, [180 * deg_to_rad, 0.0 * deg_to_rad, 45 * deg_to_rad])
         rospy.sleep(2)
-        self.go_to_xyz_rpy(self.place_target, 1.7, [3.14, 0, -3.14])
+        self.go_to_xyz_rpy(self.place_target, 1.65, [180 * deg_to_rad, 0.0 , -9.0 * deg_to_rad])
         rospy.sleep(2)
-        self.go_to_xyz_rpy(self.place_target, 1.63, [3.14, 0, -3.14])
+        self.go_to_xyz_rpy(self.place_target, 1.625, [180 * deg_to_rad, 0.0 , -9.0 * deg_to_rad])
         self.set_gripper_span(0.09)
         rospy.sleep(2)
         self.go_home()
@@ -296,7 +298,7 @@ class EdoMoveGroupInterface(object):
             elif m[0] == 'move_joint' or m[0] == 'm':
                 if len(m) == 3:
                     joint_goal = self.edo_move_group.get_current_joint_values()      
-                    joint_goal[int(m[1])] = float(m[2]) * pi/180.0
+                    joint_goal[int(m[1])] += float(m[2]) * pi/180.0
                     rospy.loginfo(f"New target joint state:\n{self.round_list(joint_goal)}")
                     self.go_to_joint_state(joint_goal)
                 else:
@@ -328,6 +330,13 @@ class EdoMoveGroupInterface(object):
             elif m[0] == 'kill' or m[0] == 'k':
                 # Stop key received, kill everything
                 self.edo_move_group.stop()
+                rospy.wait_for_service("/gazebo/delete_model", timeout=4)
+                delete_model = rospy.ServiceProxy("/gazebo/delete_model", DeleteModel)
+                for i in range(1, self.model_counter + 1):
+                    delete_model("box" + str(i))
+                    self.scene.remove_world_object("box" + str(i))
+                    delete_model("sphere" + str(i))
+                    self.scene.remove_world_object("sphere" + str(i))
                 rospy.loginfo("Stop key received, stopping...")
                 rospy.signal_shutdown("Stop key received.")
                 os._exit(os.EX_OK)
@@ -347,8 +356,6 @@ class EdoMoveGroupInterface(object):
                     self.place_target = m[2].upper()
                 rospy.loginfo("Executing pick and place.")
                 self.pick_and_place()
-            else:
-                rospy.loginfo("Unknown key received.")
 
 def main():
     try:
