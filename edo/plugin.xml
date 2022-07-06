@@ -1,0 +1,12 @@
+<library path="src">
+  <class name="EdoGui" type="edo_gui.edo_gui.EdoGui" base_class_type="rqt_gui_py::Plugin">
+    <description>
+      An example Python GUI plugin to create a great user interface.
+    </description>
+    <qtgui>
+      <label>eDO GUI</label>
+      <icon type="theme">system-help</icon>
+      <statustip>eDO user interface</statustip>
+    </qtgui>
+  </class>
+</library>

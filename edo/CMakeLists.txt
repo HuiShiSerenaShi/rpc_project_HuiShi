@@ -16,7 +16,7 @@ include_directories(
 )
 
 catkin_install_python(PROGRAMS
-  scripts/main.py 
-  scripts/edo_gripper_node.py
+  src/main.py 
+  src/edo_gripper_node.py
    DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
 )

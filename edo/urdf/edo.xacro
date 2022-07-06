@@ -14,9 +14,9 @@
     <xacro:property name="max_velocity" value="1.5"/>
     <xacro:property name="robot_prefix" value="edo"/>
 
-    <xacro:property name="table_width" value="1.5"/> <!-- x -->
-    <xacro:property name="table_depth" value="1.5"/> <!-- y -->
-    <xacro:property name="table_height" value="0.05"/> <!-- z -->
+    <xacro:property name="table_width" value="6.0"/> <!-- x -->
+    <xacro:property name="table_depth" value="4.0"/> <!-- y -->
+    <xacro:property name="table_height" value="1.6173"/> <!-- z -->
 
     <xacro:macro name="edo" params="parent hardware_interface robot_name *origin">
 
@@ -29,52 +29,22 @@
 
         <link name="${robot_prefix}_table_link">
             <visual>
-                <origin xyz="0 0 ${table_height}" rpy="0 0 0"/>
+                <origin xyz="0 0 0" rpy="0 0 0"/>
                 <geometry>
-                    <box size="${table_width} ${table_depth} ${table_height}"/>
-                    <!--mesh filename="package://edo/meshes/visual/table.dae"/-->
+                    <mesh filename="package://edo/meshes/visual/table.dae" scale="0.75 0.75 1"/>
                 </geometry>
-                <material name="Grey"/>
             </visual>
 
             <collision>
-                <origin xyz="0 0 ${table_height}" rpy="0 0 0"/>
+                <origin xyz="0 0 ${table_height / 2}" rpy="0 0 0"/>
                 <geometry>
                     <box size="${table_width} ${table_depth} ${table_height}"/>
                 </geometry>
             </collision>
             <inertial>
-                <origin xyz="0 0 ${table_height}" rpy="0 0 0"/>
+                <origin xyz="0 0 ${table_height / 2}" rpy="0 0 0"/>
                 <mass value="30.0" />
-                <inertia  ixx="5.63125" ixy="11.25"  ixz="0"  iyy="0"  iyz="0"  izz="5.63125" />
-            </inertial>
-        </link>
-
-        <!--joint between table_link and cartesian_target_link-->
-        <joint name="$${robot_name}_joint_c" type="fixed">
-            <parent link="${robot_prefix}_table_link"/>
-            <child link="${robot_prefix}_cartesian_target"/>
-        </joint>
-
-        <link name="${robot_prefix}_cartesian_target">
-            <visual>
-                <origin xyz="0 0.5 0.1" rpy="0 0 0"/>
-                <geometry>
-                    <box size="${table_width / 4} 0.05 0.05"/>
-                </geometry>
-                <material name="Blue"/>
-            </visual>
-
-            <collision>
-                <origin xyz="0 0.5 0.1" rpy="0 0 0"/>
-                <geometry>
-                    <box size="${table_width / 4} 0.05 0.05"/>
-                </geometry>
-            </collision>
-            <inertial>
-                <origin xyz="0 0.5 0.1" rpy="0 0 0"/>
-                <mass value="1.0" />
-                <inertia  ixx="0" ixy="0"  ixz="0"  iyy="0"  iyz="0"  izz="0" />
+                <inertia  ixx="11.25" ixy="0"  ixz="0"  iyy="11.25"  iyz="0"  izz="11.25" />
             </inertial>
         </link>
 
@@ -82,7 +52,7 @@
         <joint name="${robot_name}_joint0" type="fixed">
             <parent link="${robot_prefix}_table_link"/>
             <child link="${robot_prefix}_base_link"/>
-            <origin xyz="0 0 ${table_height + 0.025}" rpy="0 0 0"/>
+            <origin xyz="0 0 ${table_height}" rpy="0 0 0"/>
         </joint>
 
         <link name="${robot_prefix}_base_link">

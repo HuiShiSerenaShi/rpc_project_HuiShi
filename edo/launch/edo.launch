@@ -83,4 +83,12 @@
           launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' "  
           respawn="false" output="screen"/>
   </group>
+
+  <!-- Launch GUI 
+  <group ns="$(arg robot_name)">
+    <node name="rqt_gui" pkg="rqt_gui" type="rqt_gui" 
+          args='\-\-standalone edo_gui'
+          respawn="false" output="screen">
+    </node>
+  </group-->
 </launch>

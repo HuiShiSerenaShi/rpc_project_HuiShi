@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>Widget</class>
+ <widget class="QWidget" name="Widget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>179</width>
+    <height>383</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>eDO GUI</string>
+  </property>
+  <widget class="QWidget" name="gridLayoutWidget">
+   <property name="geometry">
+    <rect>
+     <x>10</x>
+     <y>10</y>
+     <width>160</width>
+     <height>360</height>
+    </rect>
+   </property>
+   <layout class="QGridLayout" name="gridLayout">
+    <item row="0" column="0">
+     <widget class="QLabel" name="joint_label_1">
+      <property name="text">
+       <string>Joint 1</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="1">
+     <widget class="QLabel" name="joint_value_3">
+      <property name="text">
+       <string>0</string>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="1">
+     <widget class="QLabel" name="joint_value_2">
+      <property name="text">
+       <string>0</string>
+      </property>
+     </widget>
+    </item>
+    <item row="15" column="0">
+     <widget class="EdoSlider" name="joint_6">
+      <property name="minimum">
+       <number>-360</number>
+      </property>
+      <property name="maximum">
+       <number>360</number>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="1">
+     <widget class="QLabel" name="joint_value_4">
+      <property name="text">
+       <string>0</string>
+      </property>
+     </widget>
+    </item>
+    <item row="15" column="1">
+     <widget class="QLabel" name="joint_value_6">
+      <property name="text">
+       <string>0</string>
+      </property>
+     </widget>
+    </item>
+    <item row="4" column="0">
+     <widget class="QLabel" name="joint_label_3">
+      <property name="text">
+       <string>Joint 3</string>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="0">
+     <widget class="EdoSlider" name="joint_1">
+      <property name="minimum">
+       <number>-178</number>
+      </property>
+      <property name="maximum">
+       <number>178</number>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="3" column="0">
+     <widget class="EdoSlider" name="joint_2">
+      <property name="minimum">
+       <number>-98</number>
+      </property>
+      <property name="maximum">
+       <number>98</number>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="1" column="1">
+     <widget class="QLabel" name="joint_value_1">
+      <property name="text">
+       <string>0</string>
+      </property>
+     </widget>
+    </item>
+    <item row="12" column="0">
+     <widget class="EdoSlider" name="joint_5">
+      <property name="minimum">
+       <number>-103</number>
+      </property>
+      <property name="maximum">
+       <number>103</number>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="2" column="0">
+     <widget class="QLabel" name="joint_label_2">
+      <property name="text">
+       <string>Joint 2</string>
+      </property>
+     </widget>
+    </item>
+    <item row="10" column="0">
+     <widget class="QLabel" name="joint_label_5">
+      <property name="text">
+       <string>Joint 5</string>
+      </property>
+     </widget>
+    </item>
+    <item row="5" column="0">
+     <widget class="EdoSlider" name="joint_3">
+      <property name="minimum">
+       <number>-98</number>
+      </property>
+      <property name="maximum">
+       <number>98</number>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="14" column="0">
+     <widget class="QLabel" name="joint_label_6">
+      <property name="text">
+       <string>Joint 6</string>
+      </property>
+     </widget>
+    </item>
+    <item row="20" column="0">
+     <widget class="QLabel" name="joint_label_7">
+      <property name="text">
+       <string>Gripper</string>
+      </property>
+     </widget>
+    </item>
+    <item row="21" column="1">
+     <widget class="QLabel" name="joint_value_7">
+      <property name="text">
+       <string>0</string>
+      </property>
+     </widget>
+    </item>
+    <item row="6" column="0">
+     <widget class="QLabel" name="joint_label_4">
+      <property name="text">
+       <string>Joint 4</string>
+      </property>
+     </widget>
+    </item>
+    <item row="12" column="1">
+     <widget class="QLabel" name="joint_value_5">
+      <property name="text">
+       <string>0</string>
+      </property>
+     </widget>
+    </item>
+    <item row="7" column="0">
+     <widget class="EdoSlider" name="joint_4">
+      <property name="minimum">
+       <number>-178</number>
+      </property>
+      <property name="maximum">
+       <number>178</number>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+    <item row="21" column="0">
+     <widget class="EdoSlider" name="joint_7">
+      <property name="maximum">
+       <number>90</number>
+      </property>
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
+      </property>
+     </widget>
+    </item>
+   </layout>
+  </widget>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>EdoSlider</class>
+   <extends>QSlider</extends>
+   <header>edo_gui.edo_gui_widget</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections>
+  <connection>
+   <sender>joint_1</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>joint_value_1</receiver>
+   <slot>setNum(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>53</x>
+     <y>42</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>135</x>
+     <y>42</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>joint_5</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>joint_value_5</receiver>
+   <slot>setNum(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>52</x>
+     <y>133</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>135</x>
+     <y>226</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>joint_7</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>joint_value_7</receiver>
+   <slot>setNum(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>62</x>
+     <y>178</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>135</x>
+     <y>318</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>joint_2</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>joint_value_2</receiver>
+   <slot>setNum(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>59</x>
+     <y>86</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>132</x>
+     <y>95</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>joint_6</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>joint_value_6</receiver>
+   <slot>setNum(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>83</x>
+     <y>227</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>135</x>
+     <y>272</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>joint_3</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>joint_value_3</receiver>
+   <slot>setNum(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>78</x>
+     <y>276</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>135</x>
+     <y>134</y>
+    </hint>
+   </hints>
+  </connection>
+  <connection>
+   <sender>joint_4</sender>
+   <signal>valueChanged(int)</signal>
+   <receiver>joint_value_4</receiver>
+   <slot>setNum(int)</slot>
+   <hints>
+    <hint type="sourcelabel">
+     <x>77</x>
+     <y>323</y>
+    </hint>
+    <hint type="destinationlabel">
+     <x>135</x>
+     <y>180</y>
+    </hint>
+   </hints>
+  </connection>
+ </connections>
+</ui>
