@@ -144,6 +144,7 @@ class EdoMoveGroupInterface(object):
         return self.all_close(pose_goal, current_pose, 0.01)
 
     def plan_cartesian_path(self, poses):
+        # TODO: test if this works
         # TODO: test if we can directly pass poses to compute_cartesian_path
         waypoints = []
         for pose in poses:
@@ -223,17 +224,15 @@ class EdoMoveGroupInterface(object):
 
     def pick_and_place(self):
         deg_to_rad = pi / 180.0
-        self.go_to_xyz_rpy([0.4, 0.0], 1.653, [180 * deg_to_rad, 0.0 , 45 * deg_to_rad])
+        self.go_to_xyz_rpy(self.pick_target, 1.653, [180 * deg_to_rad, 0.0 , -45 * deg_to_rad])
         self.set_gripper_span(0.09)
         rospy.sleep(2)
-        self.go_to_xyz_rpy([0.4, 0.0], 1.625, [180 * deg_to_rad, 0.0 * deg_to_rad, 45 * deg_to_rad])
+        self.go_to_xyz_rpy(self.pick_target, 1.625, [180 * deg_to_rad, 0.0 , -45 * deg_to_rad])
         self.set_gripper_span(0.0245)
         rospy.sleep(2)
-        self.go_to_xyz_rpy([0.4, 0.0], 1.653, [180 * deg_to_rad, 0.0 * deg_to_rad, 45 * deg_to_rad])
+        self.go_to_xyz_rpy(self.place_target, 1.65, [180 * deg_to_rad, 0.0 , -45 * deg_to_rad])
         rospy.sleep(2)
-        self.go_to_xyz_rpy(self.place_target, 1.65, [180 * deg_to_rad, 0.0 , -9.0 * deg_to_rad])
-        rospy.sleep(2)
-        self.go_to_xyz_rpy(self.place_target, 1.625, [180 * deg_to_rad, 0.0 , -9.0 * deg_to_rad])
+        self.go_to_xyz_rpy(self.place_target, 1.625, [180 * deg_to_rad, 0.0 , 0.0])
         self.set_gripper_span(0.09)
         rospy.sleep(2)
         self.go_home()
