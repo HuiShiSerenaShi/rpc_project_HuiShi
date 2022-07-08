@@ -82,6 +82,4 @@
     <disable_collisions link1="edo_link_4" link2="edo_link_6" reason="Never" />
     <disable_collisions link1="edo_link_5" link2="edo_link_6" reason="Adjacent" />
     <disable_collisions link1="edo_base_link" link2="edo_table_link" reason="Adjacent" />
-    <disable_collisions link1="edo_gripper_right_finger_link" link2="edo_table_link" reason="Adjacent" />
-    <disable_collisions link1="edo_gripper_left_finger_link" link2="edo_table_link" reason="Adjacent" />
 </robot>

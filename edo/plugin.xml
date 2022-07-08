@@ -1,12 +1,21 @@
 <library path="src">
-  <class name="EdoGui" type="edo_gui.edo_gui.EdoGui" base_class_type="rqt_gui_py::Plugin">
+  <class name="JointTrajectoryController"
+         type="rqt_joint_trajectory_controller.joint_trajectory_controller.JointTrajectoryController"
+         base_class_type="rqt_gui_py::Plugin">
     <description>
-      An example Python GUI plugin to create a great user interface.
+      Graphical frontend for interacting with joint_trajectory_controller instances.
     </description>
     <qtgui>
-      <label>eDO GUI</label>
-      <icon type="theme">system-help</icon>
-      <statustip>eDO user interface</statustip>
+      <group>
+        <label>Robot Tools</label>
+        <icon type="theme">folder</icon>
+        <statustip>Plugins related to robot tools.</statustip>
+      </group>
+      <label>Joint trajectory controller</label>
+      <icon>resource/scope.png</icon>
+      <statustip>
+        Monitor and send commands to running joint trajectory controllers.
+      </statustip>
     </qtgui>
   </class>
 </library>

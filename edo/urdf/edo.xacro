@@ -14,9 +14,9 @@
     <xacro:property name="max_velocity" value="1.5"/>
     <xacro:property name="robot_prefix" value="edo"/>
 
-    <xacro:property name="table_width" value="6.0"/> <!-- x -->
-    <xacro:property name="table_depth" value="4.0"/> <!-- y -->
-    <xacro:property name="table_height" value="1.6173"/> <!-- z -->
+    <xacro:property name="table_width" value="1.29657"/> <!-- x -->
+    <xacro:property name="table_depth" value="1.29657"/> <!-- y -->
+    <xacro:property name="table_height" value="0.83"/> <!-- z -->
 
     <xacro:macro name="edo" params="parent hardware_interface robot_name *origin">
 
@@ -31,18 +31,18 @@
             <visual>
                 <origin xyz="0 0 0" rpy="0 0 0"/>
                 <geometry>
-                    <mesh filename="package://edo/meshes/visual/table.dae" scale="0.75 0.75 1"/>
+                    <mesh filename="package://edo/meshes/visual/table.dae" scale="0.897 0.897 1"/>
                 </geometry>
             </visual>
 
             <collision>
-                <origin xyz="0 0 ${table_height / 2}" rpy="0 0 0"/>
+                <origin xyz="0 0 ${table_height / 2}" rpy="0 0 ${1.57 / 2}"/>
                 <geometry>
                     <box size="${table_width} ${table_depth} ${table_height}"/>
                 </geometry>
             </collision>
             <inertial>
-                <origin xyz="0 0 ${table_height / 2}" rpy="0 0 0"/>
+                <origin xyz="0 0 ${table_height / 2}" rpy="0 0 ${1.57 / 2}"/>
                 <mass value="30.0" />
                 <inertia  ixx="11.25" ixy="0"  ixz="0"  iyy="11.25"  iyz="0"  izz="11.25" />
             </inertial>
@@ -71,14 +71,14 @@
             <visual>
                 <origin xyz="0 0 0.135" rpy="0 0 0"/>
                 <geometry>
-                    <mesh filename="package://edo/meshes/visual/link_0.dae"/>
+                    <mesh filename="package://edo/meshes/visual/off_center_link_0.dae"/>
                 </geometry>
             </visual>
 
             <collision>
                 <origin xyz="0 0 0.135" rpy="0 0 0"/>
                 <geometry>
-                    <mesh filename="package://edo/meshes/collision/link_0.dae"/>
+                    <mesh filename="package://edo/meshes/collision/off_center_link_0.dae"/>
                 </geometry>
                 <material name="Grey"/>
             </collision>
