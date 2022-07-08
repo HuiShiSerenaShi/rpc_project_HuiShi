@@ -95,21 +95,6 @@ class EdoMoveGroupInterface(object):
         # Bring the robot home
         self.go_home()
 
-        self.go_to_xyz_rpy(self.marker_dict["E"], 1.0, [-179, -0.02, 171.0])
-        rospy.sleep(3)
-        self.go_to_xyz_rpy(self.marker_dict["F"], 1.0, [-179, -0.02, 189.0])
-        rospy.sleep(3)
-        self.go_to_xyz_rpy(self.marker_dict["G"], 1.0, [-179, -0.02, 207.0])
-        rospy.sleep(3)
-        self.go_to_xyz_rpy(self.marker_dict["H"], 1.0, [-179, -0.02, 225.0])
-        rospy.sleep(3)
-        self.go_to_xyz_rpy(self.marker_dict["S"], 1.0, [-179, -0.02, 99.0])
-        rospy.sleep(3)
-        self.go_to_xyz_rpy(self.marker_dict["T"], 1.0, [-179, -0.02, 81.0])
-        rospy.sleep(3)
-        self.go_to_xyz_rpy(self.marker_dict["U"], 1.0, [-179, -0.02, 63.0])
-        rospy.sleep(3)
-        self.go_to_xyz_rpy(self.marker_dict["V"], 1.0, [-179, -0.02, 45.0])
         rospy.loginfo("Initialized edo MoveGroupInterface.")
 
         # Start keyboard handling thread
