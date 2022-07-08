@@ -46,6 +46,7 @@ from trajectory_msgs.msg import JointTrajectory, JointTrajectoryPoint
 from double_editor import DoubleEditor
 from joint_limits_urdf import get_joint_limits
 from update_combo import update_combo
+from std_msgs.msg import Float32
 
 # TODO:
 # - Better UI suppor for continuous joints (see DoubleEditor TODO)
@@ -130,9 +131,8 @@ class JointTrajectoryController(Plugin):
         # Setup speed scaler
         speed_scaling = DoubleEditor(1.0, 100.0)
         speed_scaling.spin_box.setSuffix('%')
-        speed_scaling.spin_box.setValue(50.0)
+        speed_scaling.spin_box.setValue(100.0)
         speed_scaling.spin_box.setDecimals(0)
-        speed_scaling.setEnabled(False)
         self._widget.speed_scaling_layout.addWidget(speed_scaling)
         self._speed_scaling_widget = speed_scaling
         speed_scaling.valueChanged.connect(self._on_speed_scaling_change)
@@ -150,8 +150,8 @@ class JointTrajectoryController(Plugin):
         context.add_widget(self._widget)
 
         # Initialize members
-        self._jtc_name = []  # Name of selected joint trajectory controller
-        self._cm_ns = []  # Namespace of the selected controller manager
+        self._jtc_name = 'arm_controller'  # Name of selected joint trajectory controller
+        self._cm_ns = '/edo/controller_manager'  # Namespace of the selected controller manager
         self._joint_pos = {}  # name->pos map for joints of selected controller
         self._joint_names = []  # Ordered list of selected controller joints
         self._robot_joint_limits = {} # Lazily evaluated on first use
@@ -184,15 +184,18 @@ class JointTrajectoryController(Plugin):
 
         # Signal connections
         w = self._widget
-        w.enable_button.toggled.connect(self._on_jtc_enabled)
         w.jtc_combo.currentIndexChanged[str].connect(self._on_jtc_change)
         w.cm_combo.currentIndexChanged[str].connect(self._on_cm_change)
 
         self._cmd_pub = None    # Controller command publisher
         self._state_sub = None  # Controller state subscriber
 
-        self._list_controllers = None
+        # Gripper stuff
+        self._gripper_span = 0.0
+        self._gripper_pub = None
 
+        self._list_controllers = None
+        
     def shutdown_plugin(self):
         self._update_cmd_timer.stop()
         self._update_act_pos_timer.stop()
@@ -200,6 +203,7 @@ class JointTrajectoryController(Plugin):
         self._update_jtc_list_timer.stop()
         self._unregister_state_sub()
         self._unregister_cmd_pub()
+        self._unregister_gripper_pub()
 
     def save_settings(self, plugin_settings, instance_settings):
         instance_settings.set_value('cm_ns', self._cm_ns)
@@ -252,7 +256,7 @@ class JointTrajectoryController(Plugin):
             has_limits = all(name in self._robot_joint_limits
                              for name in _jtc_joint_names(jtc_info))
             if has_limits:
-                valid_jtc.append(jtc_info);
+                valid_jtc.append(jtc_info)
         valid_jtc_names = [data.name for data in valid_jtc]
 
         # Update widget
@@ -287,7 +291,6 @@ class JointTrajectoryController(Plugin):
     def _on_jtc_enabled(self, val):
         # Don't allow enabling if there are no controllers selected
         if not self._jtc_name:
-            self._widget.enable_button.setChecked(False)
             return
 
         # Enable/disable joint displays
@@ -311,6 +314,7 @@ class JointTrajectoryController(Plugin):
         running_jtc = self._running_jtc_info()
         self._joint_names = next(_jtc_joint_names(x) for x in running_jtc
                                  if x.name == self._jtc_name)
+
         for name in self._joint_names:
             self._joint_pos[name] = {}
 
@@ -329,13 +333,27 @@ class JointTrajectoryController(Plugin):
                 from functools import partial
                 par = partial(self._update_single_cmd_cb, name=name)
                 joint_widget.valueChanged.connect(par)
+            # NOTE: Using partial instead of a lambda because lambdas
+            # "will not evaluate/look up the argument values before it is
+            # effectively called, breaking situations like using a loop
+            # variable inside it"
+            from functools import partial
+            par = partial(self._update_single_cmd_cb, name=name)
+            joint_widget.valueChanged.connect(par)
         except:
             # TODO: Can we do better than swallow the exception?
             from sys import exc_info
             print('Unexpected error:', exc_info()[0])
-
+        # Add gripper slider
+        gripper = DoubleEditor(0.0, 0.080)
+        gripper.spin_box.setValue(0.0)
+        gripper.spin_box.setDecimals(3)
+        self._widget.joint_group.layout().addRow('gripper', gripper)
+        from functools import partial
+        par = partial(self._update_single_cmd_cb, name='gripper')
+        gripper.valueChanged.connect(par)
         # Enter monitor mode (sending commands disabled)
-        self._on_jtc_enabled(False)
+        self._on_jtc_enabled(True)
 
         # Setup ROS interfaces
         jtc_ns = _resolve_controller_ns(self._cm_ns, self._jtc_name)
@@ -348,6 +366,7 @@ class JointTrajectoryController(Plugin):
         self._cmd_pub = rospy.Publisher(cmd_topic,
                                         JointTrajectory,
                                         queue_size=1)
+        self._gripper_pub = rospy.Publisher("set_gripper_span", Float32, queue_size=1)
 
         # Start updating the joint positions
         self.jointStateChanged.connect(self._on_joint_state_change)
@@ -379,9 +398,6 @@ class JointTrajectoryController(Plugin):
         self._joint_names = []
         self._joint_pos = {}
 
-        # Enforce monitor mode (sending commands disabled)
-        self._widget.enable_button.setChecked(False)
-
     def _running_jtc_info(self):
         from controller_manager_msgs.utils\
             import filter_by_type, filter_by_state
@@ -392,6 +408,11 @@ class JointTrajectoryController(Plugin):
                                   match_substring=True)
         running_jtc_list = filter_by_state(jtc_list, 'running')
         return running_jtc_list
+
+    def _unregister_gripper_pub(self):
+        if self._gripper_pub is not None:
+            self._gripper_pub.unregister()
+            self._gripper_pub = None
 
     def _unregister_cmd_pub(self):
         if self._cmd_pub is not None:
@@ -412,7 +433,10 @@ class JointTrajectoryController(Plugin):
         self.jointStateChanged.emit(actual_pos)
 
     def _update_single_cmd_cb(self, val, name):
-        self._joint_pos[name]['command'] = val
+        if name == 'gripper':
+            self._gripper_span = val
+        else:
+            self._joint_pos[name]['command'] = val
 
     def _update_cmd_cb(self):
         dur = []
@@ -434,10 +458,13 @@ class JointTrajectoryController(Plugin):
         traj.points.append(point)
 
         self._cmd_pub.publish(traj)
+        msg = Float32()
+        msg.data = self._gripper_span
+        self._gripper_pub.publish(msg)
 
     def _update_joint_widgets(self):
         joint_widgets = self._joint_widgets()
-        for id in range(len(joint_widgets)):
+        for id in range(len(joint_widgets) - 1):
             joint_name = self._joint_names[id]
             try:
                 joint_pos = self._joint_pos[joint_name]['position']

@@ -83,8 +83,10 @@
   </group>
 
   <!-- Launch gui -->
+  <arg name="gui_node_start_delay" default="10.0" />  
   <group ns="$(arg robot_name)">
     <node name="edo_gui" pkg="edo" type="rqt_joint_trajectory_controller"   
+          launch-prefix="bash -c 'sleep $(arg gui_node_start_delay); $0 $@' "  
           respawn="false" output="screen"/>
   </group>
 
