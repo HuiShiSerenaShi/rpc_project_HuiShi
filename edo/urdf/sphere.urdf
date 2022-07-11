@@ -3,9 +3,9 @@
   <link name="sphere">
     <inertial>
       <mass value="1.0"/>
-      <inertia ixx="1"
-                 iyy="1"
-                 izz="1"
+      <inertia ixx="0.00625"
+                 iyy="0.00625"
+                 izz="0.00625"
                  ixy="0" iyz="0" ixz="0"/>
     </inertial>
     <visual>

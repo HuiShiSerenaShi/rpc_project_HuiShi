@@ -237,7 +237,7 @@
                     <gripper_link>${robot_prefix}_gripper_right_finger_link</gripper_link>
                 </arm>
                 <forces_angle_tolerance>90</forces_angle_tolerance>
-                <update_rate>16</update_rate>
+                <update_rate>32</update_rate>
                 <grip_count_threshold>1</grip_count_threshold>
                 <max_grip_count>2</max_grip_count>
                 <release_tolerance>0.005</release_tolerance>

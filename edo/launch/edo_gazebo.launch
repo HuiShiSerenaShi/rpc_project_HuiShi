@@ -4,14 +4,14 @@
   <arg name="gui" default="false" doc="Starts gazebo gui" />
   <arg name="robot_name" default="edo" />
   <arg name="upload_launch" default="$(find edo)/launch/edo_upload.launch" />
-  <arg name="world_name" default="worlds/empty.world" />
+  <arg name="world_name" default="$(find edo)/launch/edo.world" />
   <arg name="robot_description_param" default="robot_description" />
   <arg name="origin_xyz" default="'0 0 0'"/>
   <arg name="origin_rpy" default="'0 0 0'"/>
 
   <!-- startup simulated world -->
   <group if="$(arg gui)">
-    <include file="$(find gazebo_ros)/launch/empty_world.launch">                                               
+    <include file="$(find edo)/launch/edo_world.launch">                                               
       <arg name="verbose" value="true" />
       <arg name="world_name" default="$(arg world_name)"/>
       <arg name="paused" value="$(arg paused)"/>

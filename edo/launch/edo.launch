@@ -9,7 +9,8 @@
   <arg name="origin_rpy" default="'0 0 0'"/>
   <arg name="sim" default="true"/>
   <arg name="debug" default="true"/>
-  <arg name="rviz" default="false"/>
+  <arg name="rviz" default="false" doc="Starts rviz"/>
+  <arg name="edo_gui" default="false" doc="Starts edo gui"/>
 
   <!-- Startup simulated world -->
   <include file="$(find edo)/launch/edo_gazebo.launch">
@@ -85,7 +86,7 @@
   <!-- Launch gui -->
   <arg name="gui_node_start_delay" default="10.0" />  
   <group ns="$(arg robot_name)">
-    <node name="edo_gui" pkg="edo" type="rqt_joint_trajectory_controller"   
+    <node if="$(arg edo_gui)" name="edo_gui" pkg="edo" type="rqt_joint_trajectory_controller"   
           launch-prefix="bash -c 'sleep $(arg gui_node_start_delay); $0 $@' "  
           respawn="false" output="screen"/>
   </group>
