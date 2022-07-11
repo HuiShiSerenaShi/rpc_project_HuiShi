@@ -3,8 +3,6 @@
 import rospy
 import threading
 
-from getkey import getkey, keys
-
 class EdoConsole(object):
 
     def __init__(self, commands) -> None:

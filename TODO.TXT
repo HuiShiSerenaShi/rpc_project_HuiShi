@@ -1,0 +1,11 @@
+REMAINING TASKS:
+
+Code-related:
+    - Write a function that, given a set of markers, returns a list of cartesian
+      poses
+    - Test the plan_cartesian_path function with the obtained list of poses
+
+Documentation-related:
+    - Re-read all of the code, add comments where needed, simplify the existing
+      ones, add docstrings where needed
+    - Start writing the readme for the github repo
