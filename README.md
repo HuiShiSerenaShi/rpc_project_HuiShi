@@ -88,7 +88,7 @@ this spawns two cylinders in the given markers, and a sphere in the first one.
 Alternatively, one can set up the pick-and-place targets by manually spawning the
 models, for instance:
 
-     spawn B cylinder 
+    spawn B cylinder 
     spawn V cylinder
     spawn B sphere
 

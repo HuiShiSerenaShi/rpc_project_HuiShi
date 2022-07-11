@@ -62,6 +62,8 @@ class EdoConsole(object):
                                 callback(typed_cmd_args[0], typed_cmd_args[1])
                             elif len(typed_cmd_args) == 3:
                                 callback(typed_cmd_args[0], typed_cmd_args[1], typed_cmd_args[2])
+                            elif len(typed_cmd_args) == 4:
+                                callback(typed_cmd_args[0], typed_cmd_args[1], typed_cmd_args[2], typed_cmd_args[3])
                             else:
                                 rospy.loginfo(f"Unimplemented command.")
                         except ValueError:

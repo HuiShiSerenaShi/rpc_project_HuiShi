@@ -142,6 +142,10 @@ class EdoMoveGroupInterface(object):
                             "args" : ['markerA', 'markerB'],
                             "types" : [str, str],
                             "callback" : self.set_pnp_target },
+            "cartesian" :  { "desc" : "Plans and executes a cartesian path between the given markers.",
+                            "args" : ['m1', 'm2', 'm3', 'm4'],
+                            "types" : [str, str, str, str],
+                            "callback" : self.cartesian },
             "spawn" : { "desc" : "Spawns a shape at the given marker.",
                         "args" : ['marker', 'shape'],
                         "types" : [str, str],
@@ -150,10 +154,6 @@ class EdoMoveGroupInterface(object):
                         "args" : ['name'],
                         "types" : [str],
                         "callback" : self.delete_model },
-            "test" :  { "desc" : " ",
-                        "args" : [],
-                        "types" : [],
-                        "callback" : self.test },
         }
 
         # Start keyboard handling thread
@@ -179,16 +179,7 @@ class EdoMoveGroupInterface(object):
         return edo_utils.all_close(joint_goal, current_joints, 0.01)
 
     def go_to_xyz_rpy(self, xyz, rpy):
-        pose = Pose()
-        pose.position.x = xyz[0]
-        pose.position.y = xyz[1]
-        pose.position.z = xyz[2]
-        # Compute the quaternion orientation from rpy
-        new_orientation = quaternion_from_euler(rpy[0]*DEG2RAD, rpy[1]*DEG2RAD, rpy[2]*DEG2RAD)
-        pose.orientation.x = new_orientation[0]
-        pose.orientation.y = new_orientation[1]
-        pose.orientation.z = new_orientation[2]
-        pose.orientation.w = new_orientation[3]
+        pose = self.pose_from_xyz_rpy(xyz, rpy)
         self.go_to_pose_goal(pose)
 
     def go_to_pose_goal(self, pose_goal):
@@ -224,7 +215,7 @@ class EdoMoveGroupInterface(object):
         for pose in poses:
             waypoints.append(copy.deepcopy(pose))
         # Generate a motion plan from the list of poses
-        (plan, fraction) = self.edo_move_group.compute_cartesian_path(waypoints, 0.01, 0.0)
+        (plan, fraction) = self.edo_move_group.compute_cartesian_path(waypoints, 0.001, 0.0)
         return plan, fraction
 
     def execute_plan(self, plan):
@@ -292,31 +283,75 @@ class EdoMoveGroupInterface(object):
     def pick_and_place(self, pick, place):
         self.pick_target = pick.upper()
         self.place_target = place.upper()
-        rospy.loginfo("Executing pick and place.")
-        # Set up waypoints
-        pick_approach = self.marker_dict[self.pick_target]['xyz'].copy()
-        pick_approach[2] = 0.95
-        pick = self.marker_dict[self.pick_target]['xyz'].copy()
-        place_approach = self.marker_dict[self.place_target]['xyz'].copy()
-        place_approach[2] = 0.95
-        place = self.marker_dict[self.place_target]['xyz'].copy()
-        # Execute pick and place
-        self.go_to_xyz_rpy(pick_approach, self.marker_dict[self.pick_target]['rpy'])
-        self.set_gripper_span(0.09)
-        rospy.sleep(2)
-        self.go_to_xyz_rpy(pick, self.marker_dict[self.pick_target]['rpy'])
-        # Close the gripper sligthly less than the real width, helps achieve grasp
-        self.set_gripper_span(0.024)
-        rospy.sleep(2)
-        self.go_to_xyz_rpy(pick_approach, self.marker_dict[self.pick_target]['rpy'])
-        rospy.sleep(2)
-        self.go_to_xyz_rpy(place_approach, self.marker_dict[self.place_target]['rpy'])
-        rospy.sleep(2)
-        self.go_to_xyz_rpy(place, self.marker_dict[self.place_target]['rpy'])
-        self.set_gripper_span(0.09)
-        rospy.sleep(2)
-        self.go_to_xyz_rpy(place_approach, self.marker_dict[self.place_target]['rpy'])
-        self.go_home()
+        if self.pick_target not in self.marker_dict:
+            rospy.loginfo(f"Argument '{self.pick_target}' is not a known marker.")
+        elif self.place_target not in self.marker_dict:
+            rospy.loginfo(f"Argument '{self.place_target}' is not a known marker.")
+        else:
+            rospy.loginfo("Executing pick and place.")
+            # Set up waypoints
+            pick_approach = self.marker_dict[self.pick_target]['xyz'].copy()
+            pick_approach[2] = 0.95
+            pick = self.marker_dict[self.pick_target]['xyz'].copy()
+            place_approach = self.marker_dict[self.place_target]['xyz'].copy()
+            place_approach[2] = 0.95
+            place = self.marker_dict[self.place_target]['xyz'].copy()
+            # Execute pick and place
+            self.go_to_xyz_rpy(pick_approach, self.marker_dict[self.pick_target]['rpy'])
+            self.set_gripper_span(0.09)
+            rospy.sleep(2)
+            self.go_to_xyz_rpy(pick, self.marker_dict[self.pick_target]['rpy'])
+            # Close the gripper sligthly less than the real width, helps achieve grasp
+            self.set_gripper_span(0.024)
+            rospy.sleep(2)
+            self.go_to_xyz_rpy(pick_approach, self.marker_dict[self.pick_target]['rpy'])
+            rospy.sleep(2)
+            self.go_to_xyz_rpy(place_approach, self.marker_dict[self.place_target]['rpy'])
+            rospy.sleep(2)
+            self.go_to_xyz_rpy(place, self.marker_dict[self.place_target]['rpy'])
+            self.set_gripper_span(0.09)
+            rospy.sleep(2)
+            self.go_to_xyz_rpy(place_approach, self.marker_dict[self.place_target]['rpy'])
+            self.go_home()
+
+    def cartesian(self, m1, m2, m3, m4):
+        if m1.upper() not in self.marker_dict:
+            rospy.loginfo(f"Argument '{m1}' is not a known marker.")
+        elif m2.upper() not in self.marker_dict:
+            rospy.loginfo(f"Argument '{m2}' is not a known marker.")
+        elif m3.upper() not in self.marker_dict:
+            rospy.loginfo(f"Argument '{m3}' is not a known marker.")
+        elif m4.upper() not in self.marker_dict:
+            rospy.loginfo(f"Argument '{m4}' is not a known marker.")
+        else:
+            poses = [
+                self.pose_from_xyz_rpy(self.marker_dict[m2.upper()]['xyz'], self.marker_dict[m2.upper()]['rpy']),
+                self.pose_from_xyz_rpy(self.marker_dict[m3.upper()]['xyz'], self.marker_dict[m3.upper()]['rpy']),
+                self.pose_from_xyz_rpy(self.marker_dict[m4.upper()]['xyz'], self.marker_dict[m4.upper()]['rpy']),
+                self.pose_from_xyz_rpy(self.marker_dict[m1.upper()]['xyz'], self.marker_dict[m1.upper()]['rpy']),
+            ]
+            self.go_to_pose_goal(poses[3])
+            rospy.sleep(1)
+            (plan, fraction) = self.plan_cartesian_path(poses)
+            if fraction != 1.0:
+                rospy.loginfo("No cartesian path exists that passes through the given markers.")
+            else:
+                self.execute_plan(plan)
+
+    def pose_from_xyz_rpy(self, xyz, rpy):
+        # Computes a pose message from the given xyz coords and rpy orientation
+        pose = Pose()
+        pose.position.x = xyz[0]
+        pose.position.y = xyz[1]
+        pose.position.z = xyz[2]
+        # Compute the quaternion orientation from rpy
+        new_orientation = quaternion_from_euler(rpy[0]*DEG2RAD, rpy[1]*DEG2RAD, rpy[2]*DEG2RAD)
+        pose.orientation.x = new_orientation[0]
+        pose.orientation.y = new_orientation[1]
+        pose.orientation.z = new_orientation[2]
+        pose.orientation.w = new_orientation[3]
+        return pose
+
 
     def spawn_model(self, xyz, model, timeout=4):
         if model not in ['box', 'sphere', 'cylinder']:
