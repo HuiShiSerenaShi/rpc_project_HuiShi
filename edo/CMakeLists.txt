@@ -10,7 +10,14 @@ find_package(catkin REQUIRED COMPONENTS
   gazebo_ros
   geometry_msgs
   roscpp
+  moveit_core
+  pluginlib
+  tf2_kdl
+  tf2_eigen
 )
+moveit_build_options()
+
+find_package(LAPACK REQUIRED)
 
 find_package(gazebo REQUIRED)
 
@@ -44,6 +51,8 @@ include_directories(
   ${GAZEBO_INCLUDE_DIRS}
   ${CMAKE_CURRENT_BINARY_DIR}
 )
+include_directories(include)
+include_directories(SYSTEM ${catkin_INCLUDE_DIRS})
 
 add_subdirectory(msgs)
 link_directories(
@@ -72,9 +81,28 @@ target_link_libraries(gazebo_grasp_fix
    ${Boost_LIBRARIES}
 )
 
+set(IKFAST_LIBRARY_NAME edo_edo_moveit_ikfast_plugin)
+add_library(${IKFAST_LIBRARY_NAME} src/edo_edo_ikfast_moveit_plugin.cpp)
+target_link_libraries(${IKFAST_LIBRARY_NAME} ${catkin_LIBRARIES} ${Boost_LIBRARIES} ${LAPACK_LIBRARIES})
+# suppress warnings about unused variables in OpenRave's solver code
+target_compile_options(${IKFAST_LIBRARY_NAME} PRIVATE -Wno-unused-variable -Wno-unused-parameter)
+
+
 #############
 ## Install ##
 #############
+install(TARGETS
+  ${IKFAST_LIBRARY_NAME}
+  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+  RUNTIME DESTINATION ${CATKIN_GLOBAL_BIN_DESTINATION})
+
+install(
+  FILES
+  edo_edo_moveit_ikfast_plugin_description.xml
+  DESTINATION
+  ${CATKIN_PACKAGE_SHARE_DESTINATION}
+)
 ## Mark executables and/or libraries for installation
 install(TARGETS gazebo_grasp_fix
    ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}

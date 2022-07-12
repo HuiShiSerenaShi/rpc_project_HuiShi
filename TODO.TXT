@@ -1,6 +1,0 @@
-REMAINING TASKS:
-
-Documentation-related:
-    - Re-read all of the code, add comments where needed, simplify the existing
-      ones, add docstrings where needed
-    - Start writing the readme for the github repo

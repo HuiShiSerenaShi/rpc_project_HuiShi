@@ -13,7 +13,12 @@
   <build_depend>gazebo_ros</build_depend>
   <build_depend>gazebo</build_depend>
   <build_depend>geometry_msgs</build_depend>
+  <build_depend>moveit_core</build_depend>
+  <build_depend>pluginlib</build_depend>
+  <build_depend>tf2_eigen</build_depend>
+  <build_depend>liblapack-dev</build_depend>
   <build_depend>roscpp</build_depend>
+  <build_depend>tf2_kdl</build_depend>
   <build_depend>gazebo_version_helpers</build_depend>
   <build_depend>geometry_msgs</build_depend>
   <build_depend>moveit_commander</build_depend>
@@ -42,10 +47,14 @@
   <exec_depend>gazebo_ros</exec_depend>
   <exec_depend>gazebo</exec_depend>
   <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>moveit_core</exec_depend>
+  <exec_depend>pluginlib</exec_depend>
+  <exec_depend>liblapack-dev</exec_depend>
   <exec_depend>roscpp</exec_depend>
   <exec_depend>gazebo_version_helpers</exec_depend>
 
   <export>
     <rqt_gui plugin="${prefix}/plugin.xml"/>
+    <moveit_core plugin="${prefix}/edo_edo_moveit_ikfast_plugin_description.xml"/>
   </export>
 </package>
