@@ -58,31 +58,32 @@ class EdoMoveGroupInterface(object):
         self.model_counter = 0
 
         # xyz-rpy coords of the marked circles in the workspace
+        marker_height = 0.9
         self.marker_dict = {
-            "A" : { 'xyz' : [ 0.405, 0.295, 0.9], 'rpy' : [173, 6, 168]},
-            "B" : { 'xyz' : [ 0.295, 0.405, 0.9], 'rpy' : [173, 6, -174]},
-            "C" : { 'xyz' : [ 0.155, 0.475, 0.9], 'rpy' : [173, 6, -155]},
-            "D" : { 'xyz' : [ 0.000, 0.500, 0.9], 'rpy' : [173, 6, -138]},
-            "E" : { 'xyz' : [ 0.325, 0.235, 0.9], 'rpy' : [180, 0, 180]},
-            "F" : { 'xyz' : [ 0.235, 0.325, 0.9], 'rpy' : [180, 0, -170]},
-            "G" : { 'xyz' : [ 0.125, 0.380, 0.9], 'rpy' : [180, 0, -152]},
-            "H" : { 'xyz' : [ 0.000, 0.400, 0.9], 'rpy' : [180, 0, -134]},
-            "I" : { 'xyz' : [ 0.240, 0.175, 0.9], 'rpy' : [-177.32, -4.21, -176.89]},
-            "J" : { 'xyz' : [ 0.175, 0.240, 0.9], 'rpy' : [-177.32, -4.21, -176.89]},
-            "K" : { 'xyz' : [ 0.090, 0.285, 0.9], 'rpy' : [-177.32, -4.206, -141.293]},
-            "L" : { 'xyz' : [ 0.000, 0.300, 0.9], 'rpy' : [-177.325, -4.206, -123.493]},
-            "O" : { 'xyz' : [ 0.245, -0.175, 0.9], 'rpy' : [-177.32, -4.21, 111.25]},
-            "P" : { 'xyz' : [ 0.180, -0.240, 0.9], 'rpy' : [-177.32, -4.20, 92.84]},
-            "Q" : { 'xyz' : [ 0.091, -0.288, 0.9], 'rpy' : [-177, -4.21, 75]},
-            "R" : { 'xyz' : [ 0.000, -0.300, 0.9], 'rpy' : [-177, -4.32, 57]},
-            "S" : { 'xyz' : [ 0.320, -0.235, 0.9], 'rpy' : [-180, 0, 100]},
-            "T" : { 'xyz' : [ 0.235, -0.325, 0.9], 'rpy' : [-180, 0, 82]},
-            "U" : { 'xyz' : [ 0.120, -0.380, 0.9], 'rpy' : [-180, 0, 64]},
-            "V" : { 'xyz' : [ 0.000, -0.400, 0.9], 'rpy' : [-180, 0, 46]},
-            "W" : { 'xyz' : [ 0.405, -0.295, 0.9], 'rpy' : [173, 6, 96]},
-            "X" : { 'xyz' : [ 0.295, -0.405, 0.9], 'rpy' : [173, 6, 78]},
-            "Y" : { 'xyz' : [ 0.155, -0.475, 0.9], 'rpy' : [173, 6, 60]},
-            "Z" : { 'xyz' : [ 0.000, -0.500, 0.9], 'rpy' : [173, 6, 42]},
+            "A" : { 'xyz' : [ 0.405, 0.295, marker_height], 'rpy' : [173, 6, 168]},
+            "B" : { 'xyz' : [ 0.295, 0.405, marker_height], 'rpy' : [173, 6, -174]},
+            "C" : { 'xyz' : [ 0.155, 0.475, marker_height], 'rpy' : [173, 6, -155]},
+            "D" : { 'xyz' : [ 0.000, 0.500, marker_height], 'rpy' : [173, 6, -138]},
+            "E" : { 'xyz' : [ 0.325, 0.235, marker_height], 'rpy' : [180, 0, 180]},
+            "F" : { 'xyz' : [ 0.235, 0.325, marker_height], 'rpy' : [180, 0, -170]},
+            "G" : { 'xyz' : [ 0.125, 0.380, marker_height], 'rpy' : [180, 0, -152]},
+            "H" : { 'xyz' : [ 0.000, 0.400, marker_height], 'rpy' : [180, 0, -134]},
+            "I" : { 'xyz' : [ 0.240, 0.175, marker_height], 'rpy' : [-177.32, -4.21, -176.89]},
+            "J" : { 'xyz' : [ 0.175, 0.240, marker_height], 'rpy' : [-177.32, -4.21, -176.89]},
+            "K" : { 'xyz' : [ 0.090, 0.285, marker_height], 'rpy' : [-177.32, -4.206, -141.293]},
+            "L" : { 'xyz' : [ 0.000, 0.300, marker_height], 'rpy' : [-177.325, -4.206, -123.493]},
+            "O" : { 'xyz' : [ 0.245, -0.175, marker_height], 'rpy' : [-177.32, -4.21, 111.25]},
+            "P" : { 'xyz' : [ 0.180, -0.240, marker_height], 'rpy' : [-177.32, -4.20, 92.84]},
+            "Q" : { 'xyz' : [ 0.091, -0.288, marker_height], 'rpy' : [-177, -4.21, 75]},
+            "R" : { 'xyz' : [ 0.000, -0.300, marker_height], 'rpy' : [-177, -4.32, 57]},
+            "S" : { 'xyz' : [ 0.320, -0.235, marker_height], 'rpy' : [-180, 0, 100]},
+            "T" : { 'xyz' : [ 0.235, -0.325, marker_height], 'rpy' : [-180, 0, 82]},
+            "U" : { 'xyz' : [ 0.120, -0.380, marker_height], 'rpy' : [-180, 0, 64]},
+            "V" : { 'xyz' : [ 0.000, -0.400, marker_height], 'rpy' : [-180, 0, 46]},
+            "W" : { 'xyz' : [ 0.405, -0.295, marker_height], 'rpy' : [173, 6, 96]},
+            "X" : { 'xyz' : [ 0.295, -0.405, marker_height], 'rpy' : [173, 6, 78]},
+            "Y" : { 'xyz' : [ 0.155, -0.475, marker_height], 'rpy' : [173, 6, 60]},
+            "Z" : { 'xyz' : [ 0.000, -0.500, marker_height], 'rpy' : [173, 6, 42]},
         }
 
         # Pick and place targets
@@ -315,7 +316,7 @@ class EdoMoveGroupInterface(object):
             rospy.sleep(2)
             self.go_to_xyz_rpy(pick, self.marker_dict[self.pick_target]['rpy'])
             # Close the gripper sligthly less than the real width, helps achieve grasp
-            self.set_gripper_span(0.024)
+            self.set_gripper_span(0.023)
             rospy.sleep(2)
             self.go_to_xyz_rpy(pick_approach, self.marker_dict[self.pick_target]['rpy'])
             rospy.sleep(2)
@@ -381,7 +382,7 @@ class EdoMoveGroupInterface(object):
                     urdf = f.read()
                 # Check if a marker letter was given
                 if type(xyz) == str:
-                    xyz = self.marker_dict[xyz.upper()]['xyz']
+                    xyz = self.marker_dict[xyz.upper()]['xyz'].copy()
                 self.model_counter += 1
                 # Set up the pose for the pickable box
                 pose = Pose()
