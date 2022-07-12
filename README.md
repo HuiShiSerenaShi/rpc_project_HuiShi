@@ -106,7 +106,7 @@ position.
 
 The resulting execution should be similar to this:
 
-[GIF PICK AND PLACE]
+![alt text](https://github.com/lbusellato/rpc_project/blob/master/media/pnp.gif "Logo Title Text 1")
 
 Note that different behaviors can arise during different executions, depending on
 the optimization steps performed by the planner.
