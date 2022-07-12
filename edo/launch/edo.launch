@@ -8,7 +8,7 @@
   <arg name="origin_xyz" default="'0 0 0'"/>
   <arg name="origin_rpy" default="'0 0 0'"/>
   <arg name="sim" default="true"/>
-  <arg name="debug" default="true"/>
+  <arg name="debug" default="false"/>
   <arg name="rviz" default="false" doc="Starts rviz"/>
   <arg name="edo_gui" default="false" doc="Starts edo gui"/>
 
@@ -88,6 +88,14 @@
   <group ns="$(arg robot_name)">
     <node if="$(arg edo_gui)" name="edo_gui" pkg="edo" type="rqt_joint_trajectory_controller"   
           launch-prefix="bash -c 'sleep $(arg gui_node_start_delay); $0 $@' "  
+          respawn="false" output="screen"/>
+  </group>
+
+  <!-- Launch main node -->
+  <arg name="main_node_start_delay" default="10.0" />  
+  <group ns="$(arg robot_name)">
+    <node name="edo_main" pkg="edo" type="main.py"   
+          launch-prefix="bash -c 'sleep $(arg main_node_start_delay); $0 $@' "  
           respawn="false" output="screen"/>
   </group>
 
