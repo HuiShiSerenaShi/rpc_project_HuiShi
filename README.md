@@ -1,5 +1,9 @@
 # MoveIt interface for a simulated COMAU e.DO™ manipulator
 
+<p align="center">
+  <img src="https://github.com/lbusellato/rpc_project/blob/master/media/plancia.png" />
+</p>
+
 This repository contains the code for the final project of the Robot Programming
 and Control course @UniVR.
 
@@ -82,22 +86,22 @@ The ```edo_move_group_interface``` node implements a pick-and-place task
 parameterized on the markers on the work surface. Through the command line, one
 can set up the pick-and-place targets by executing the command:
 
-    pnp_target B V
+    pnp_target S E 
 
 this spawns two cylinders in the given markers, and a sphere in the first one.
 Alternatively, one can set up the pick-and-place targets by manually spawning the
 models, for instance:
 
-    spawn B cylinder 
-    spawn V cylinder
-    spawn B sphere
+    spawn S cylinder 
+    spawn E cylinder
+    spawn S sphere
 
 would produce the same setup as the previous command. The node doesn't keep track 
 of what-is-spawned-where, so pay attention if doing the setup manually.
 
 Once the task has been set up, it can be executed by executing the command:
 
-    pnp B V
+    pnp S E
 
 The robot should then move to the pick approach location, lower itself on the pick location and close the gripper, grasping the sphere. Then the robot will move back 
 to the approach location. Finally it will move to the place approach location, lower itself on the place location, open the gripper and release the sphere. It should 
@@ -106,7 +110,9 @@ position.
 
 The resulting execution should be similar to this:
 
-![alt text](https://github.com/lbusellato/rpc_project/blob/master/media/pnp.gif "Logo Title Text 1")
+<p align="center">
+  <img src="https://github.com/lbusellato/rpc_project/blob/master/media/pnp.gif" />
+</p>
 
 Note that different behaviors can arise during different executions, depending on
 the optimization steps performed by the planner.
@@ -120,14 +126,16 @@ through R regions, because the end-effector would have to cross
 
 To plan and execute the path one can execute the command:
 
-    cartesian A W S E
+    cartesian S E A W
 
-The robot should then move in a straight line from A to W, then from W to S, 
-then from S to E and finally from E to A.
+The robot should then move in a straight line from S to E, then from E to A, then
+from A to W, then finally from W to S.
 
 The resulting execution should be similar to this:
 
-[GIF CARTESIAN PATH]
+<p align="center">
+  <img src="https://github.com/lbusellato/rpc_project/blob/master/media/cartesian.gif" />
+</p>
 
 ## Implementation details
 
