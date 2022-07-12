@@ -85,7 +85,7 @@ class EdoGripperControl(object):
         self.right_base_pub.publish(baseMsg)
 
     def reset(self):
-        self.desired_span = 0.05
+        self.desired_span = 0.0
         self.set_gripper_span(self.desired_span)
 
 def main():

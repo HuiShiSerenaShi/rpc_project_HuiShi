@@ -7,7 +7,7 @@
 #include <stdio.h>
 
 #include <gazebo_grasp_plugin/GazeboGraspGripper.h>
-#include <gazebo_version_helpers/GazeboVersionHelpers.h>
+#include <gazebo_grasp_plugin/GazeboVersionHelpers.h>
 
 using gazebo::GazeboGraspGripper;
 

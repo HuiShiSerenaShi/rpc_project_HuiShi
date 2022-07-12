@@ -6,7 +6,7 @@
 #include <gazebo/common/common.hh>
 
 #include <gazebo_grasp_plugin/GazeboGraspFix.h>
-#include <gazebo_version_helpers/GazeboVersionHelpers.h>
+#include <gazebo_grasp_plugin/GazeboVersionHelpers.h>
 
 #include <msgs/grasp_event.pb.h>
 

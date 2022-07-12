@@ -7,14 +7,85 @@ find_package(catkin REQUIRED COMPONENTS
   moveit_msgs
   rospy
   std_msgs
+  gazebo_ros
+  geometry_msgs
+  roscpp
 )
+
+find_package(gazebo REQUIRED)
 
 catkin_python_setup()
 
-catkin_package()
+catkin_package(
+  INCLUDE_DIRS include ${CMAKE_CURRENT_BINARY_DIR}/..
+  LIBRARIES gazebo_grasp_fix gazebo_grasp_msgs gazebo_version_helpers
+  CATKIN_DEPENDS gazebo_ros geometry_msgs roscpp std_msgs 
+  DEPENDS gazebo
+)
+
+###########
+## Build ##
+###########
+# check c++11 / c++0x
+include(CheckCXXCompilerFlag)
+CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
+CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
+if(COMPILER_SUPPORTS_CXX11)
+    set(CMAKE_CXX_FLAGS "-std=c++11")
+elseif(COMPILER_SUPPORTS_CXX0X)
+    set(CMAKE_CXX_FLAGS "-std=c++0x")
+else()
+    message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler. Suggested solution: update the pkg build-essential ")
+endif()
 
 include_directories(
+  include
   ${catkin_INCLUDE_DIRS}
+  ${GAZEBO_INCLUDE_DIRS}
+  ${CMAKE_CURRENT_BINARY_DIR}
+)
+
+add_subdirectory(msgs)
+link_directories(
+  ${catkin_LIBRARY_DIRS}
+  ${GAZEBO_LIBRARY_DIRS}
+  ${CMAKE_CURRENT_BINARY_DIR}/msgs
+)
+
+## Declare a cpp library
+add_library(gazebo_grasp_fix SHARED 
+  src/gazebo_grasp_fix_plugin/GazeboGraspFix.cpp 
+  src/gazebo_grasp_fix_plugin/GazeboGraspGripper.cpp 
+  src/gazebo_grasp_fix_plugin/GazeboVersionHelpers.cpp)
+
+## Add cmake target dependencies of the executable/library
+## as an example, message headers may need to be generated before nodes
+# add_dependencies(gazebo_grasp_plugin_node gazebo_grasp_plugin_generate_messages_cpp)
+add_dependencies(gazebo_grasp_fix ${catkin_EXPORTED_TARGETS})
+
+## Specify libraries to link a library or executable target against
+
+target_link_libraries(gazebo_grasp_fix
+   gazebo_grasp_msgs
+   ${catkin_LIBRARIES}
+   ${GAZEBO_LIBRARIES}
+   ${Boost_LIBRARIES}
+)
+
+#############
+## Install ##
+#############
+## Mark executables and/or libraries for installation
+install(TARGETS gazebo_grasp_fix
+   ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+   LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
+   RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
+)
+
+## Mark cpp header files for installation
+install(DIRECTORY include/gazebo_grasp_plugin/
+   DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
+   FILES_MATCHING PATTERN "*.h"
 )
 
 # Install plugins

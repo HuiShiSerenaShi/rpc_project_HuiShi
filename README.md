@@ -115,16 +115,15 @@ the optimization steps performed by the planner.
 
 The ```edo_move_group_interface``` node implements a Cartesian trajectory planning
 task between four given markers on the work surface. In the current implementation
-all four markers must belong to the same quadrant of the surface, i.e. A through L
-or O through Z.
+it is not possible to have two consecutive markers in the I through L and O 
+through R regions, because the end-effector would have to cross
 
 To plan and execute the path one can execute the command:
 
-    cartesian A I K C
+    cartesian A W S E
 
-The robot should then move in a straight line while not changing the 
-end-effector's orientation from A to I, then from I to K, then from K to C and 
-finally from C to A.
+The robot should then move in a straight line from A to W, then from W to S, 
+then from S to E and finally from E to A.
 
 The resulting execution should be similar to this:
 

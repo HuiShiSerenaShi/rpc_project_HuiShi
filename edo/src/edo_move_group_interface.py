@@ -114,6 +114,10 @@ class EdoMoveGroupInterface(object):
                         "args" : ['width'],
                         "types" : [float],
                         "callback" : self.set_gripper_span },
+            "goto" : { "desc" : "Moves the robot to the given marker.",
+                        "args" : ['marker'],
+                        "types" : [str],
+                        "callback" : self.go_to_marker },
             "home" :  { "desc" : "Moves the robot to the home position.",
                         "args" : [],
                         "types" : [],
@@ -196,6 +200,15 @@ class EdoMoveGroupInterface(object):
         current_pose = self.edo_move_group.get_current_pose().pose
         return edo_utils.all_close(pose_goal, current_pose, 0.01)
 
+    def go_to_marker(self, marker):
+        if marker.upper() not in self.marker_dict:
+            rospy.loginfo(f"Unknown marker '{marker}'")
+        else:
+            xyz = self.marker_dict[marker.upper()]['xyz'].copy()
+            rpy = self.marker_dict[marker.upper()]['rpy'].copy()
+            pose = self.pose_from_xyz_rpy(xyz, rpy)
+            self.go_to_pose_goal(pose)
+
     def set_joint(self, joint, angle):
         # Set the given joint to the given angle
         joint_goal = self.edo_move_group.get_current_joint_values() 
@@ -215,7 +228,7 @@ class EdoMoveGroupInterface(object):
         for pose in poses:
             waypoints.append(copy.deepcopy(pose))
         # Generate a motion plan from the list of poses
-        (plan, fraction) = self.edo_move_group.compute_cartesian_path(waypoints, 0.001, 0.0)
+        (plan, fraction) = self.edo_move_group.compute_cartesian_path(waypoints, 0.0001, 0.0)
         return plan, fraction
 
     def execute_plan(self, plan):

@@ -1,4 +1,4 @@
-#include <gazebo_version_helpers/GazeboVersionHelpers.h>
+#include <gazebo_grasp_plugin/GazeboVersionHelpers.h>
 #include <gazebo/physics/physics.hh>
 
 using gazebo::GzPose3;
