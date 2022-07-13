@@ -142,6 +142,8 @@ axes as well as some known positions marked with letters.
 
 <p align="center">
   <img src="https://github.com/lbusellato/rpc_project/blob/master/media/edo_workspace_v3.jpg" width="450" height="450" />
+</p>
+<p align="center">
   <em>e.DO™ working board</em>
 </p>
 
@@ -160,6 +162,8 @@ link of the robot, in the [__edo.xacro__](https://github.com/lbusellato/rpc_proj
 
 <p align="center">
   <img src="https://github.com/lbusellato/rpc_project/blob/master/media/edo.png" width="450" height="450" />
+</p>
+<p align="center">
   <em>Resulting model</em>
 </p>
 
@@ -222,6 +226,8 @@ The end effector mounted on the manipulator is a linear gripper with two fingers
 
 <p align="center">
   <img src="https://github.com/lbusellato/rpc_project/blob/master/media/edo_gripper.png" width="450" height="200" />
+</p>
+<p align="center">
   <em>e.DO™ gripper</em>
 </p>
 
