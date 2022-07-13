@@ -140,8 +140,16 @@ The resulting execution should be similar to this:
 ## Implementation details
 
 ### Workspace modeling and URDF integration
-The work area is modeled as similar as possible to the position of the COMAU e.DO ™ robotic manipulator in the univr ICE laboratory. 
-Infact the manipulator is on a table of dimension (1.30x1.30x0.83). 
+The work area is modeled to be as similar as possible to the real-life workspace of the COMAU e.DO™ robotic manipulator in the [UniVR ICE laboratory](https://www.icelab.di.univr.it/). 
+The manipulator is placed on a table of dimension (1.30x1.30x0.83), on which is also
+placed a replica of e.DO™'s working board, which is a mat that shows the x-y cartesian
+axes as well as some known positions marked with letters.
+
+<p align="center">
+  <img src="https://github.com/lbusellato/rpc_project/blob/master/media/edo_workspace_v3.jpg" />
+  <em>image_caption</em>
+</p>
+
 To create the model of the table it was necessary to divide it into two phases, the virtual creation of the table according to the established measurements (by software Blender) and the dashboard on which it is possible to map the movements of the manipulator with precise coordinates (CAD).
 
 

@@ -15,8 +15,8 @@ class EdoConsole(object):
                                     "types" : [],
                                     "callback" : self.help }
         # Start the keyboard handling thread
-        th = threading.Thread(target=self.handle_keyboard)
-        th.start()
+        self.th = threading.Thread(target=self.handle_keyboard)
+        self.th.start()
 
     def help(self):
         # Print list of commands

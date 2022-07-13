@@ -19,4 +19,8 @@
       </geometry>
     </collision>
   </link>
+  <gazebo>
+    <mu1>100.0</mu1>
+    <mu2>100.0</mu2>
+  </gazebo>
 </robot>

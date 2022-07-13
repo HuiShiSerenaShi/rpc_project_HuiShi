@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <sdf version="1.5">
-  <world name="default">
+  <world name="edo_world">
     <!-- These settings were indicated for the grasp fix plugin -->
     <!-- https://github.com/JenniferBuehler/gazebo-pkgs/wiki/Gazebo-physics-settings -->
     <physics type="ode"> 

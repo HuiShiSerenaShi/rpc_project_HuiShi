@@ -161,7 +161,7 @@ class EdoMoveGroupInterface(object):
         rospy.loginfo("Initialized edo MoveGroupInterface.")
 
         # Start keyboard handling thread
-        console = edo_console.EdoConsole(self.commands)
+        self.console = edo_console.EdoConsole(self.commands)
 
     def set_home(self):
         # Change the home position
@@ -310,8 +310,6 @@ class EdoMoveGroupInterface(object):
             rospy.loginfo(f"Argument '{pick_target}' is not a known marker.")
         elif place_target not in self.marker_dict:
             rospy.loginfo(f"Argument '{place_target}' is not a known marker.")
-        elif self.find_marker(self.marker_dict[place_target]['xyz']) != '':
-            rospy.loginfo(f"There already is a sphere on marker '{place_target}'.")
         else:
             rospy.loginfo("Executing pick and place.")
             # Check if a sphere does exist at the marker
@@ -320,49 +318,56 @@ class EdoMoveGroupInterface(object):
                 if model[1] == pick_target:
                     model_name = model[0]
                     break
-            # Set up waypoints
-            pick_approach = self.marker_dict[pick_target]['xyz'].copy()
-            pick_approach[2] = 0.95
-            pick = self.marker_dict[pick_target]['xyz'].copy()
-            place_approach = self.marker_dict[place_target]['xyz'].copy()
-            place_approach[2] = 0.95
-            place = self.marker_dict[place_target]['xyz'].copy()
-            # Execute pick and place
-            self.go_to_xyz_rpy(pick_approach, self.marker_dict[pick_target]['rpy'])
-            self.set_gripper_span(0.09)
-            rospy.sleep(1)
-            self.go_to_xyz_rpy(pick, self.marker_dict[pick_target]['rpy'])
-            # Close the gripper sligthly less than the real width, helps achieve grasp
-            self.set_gripper_span(0.023)
-            if model_name is not None:
-                # Attach the sphere to the gripper in the planning scene
-                grasping_group = "edo_gripper"
-                touch_links = self.robot.get_link_names(group=grasping_group)
-                self.scene.attach_box(self.eef_link, model_name, touch_links=touch_links)
-                self.wait_for_state_update(name=model_name, is_known=False, is_attached=True, timeout=4)
-            rospy.sleep(1)
-            self.go_to_xyz_rpy(pick_approach, self.marker_dict[pick_target]['rpy'])
-            rospy.sleep(1)
-            self.go_to_xyz_rpy(place_approach, self.marker_dict[place_target]['rpy'])
-            rospy.sleep(1)
-            self.go_to_xyz_rpy(place, self.marker_dict[place_target]['rpy'])
-            self.set_gripper_span(0.09)
-            if model_name is not None:
-                # Detach the sphere from the gripper in the planning scene
-                self.scene.remove_attached_object(self.eef_link, name=model_name)
-                self.wait_for_state_update(name=model_name, is_known=True, is_attached=False, timeout=4)
-                for model in self.spawned_models:
-                    if model[1] == pick_target:
-                        model = list(model)
-                        break
-                model[1] = place_target
-                # Update the sphere's marker
-                self.spawned_models = [x for x in self.spawned_models if x[0] != model_name]
-                self.spawned_models.append(tuple(model))
-            rospy.sleep(1)
-            self.go_to_xyz_rpy(place_approach, self.marker_dict[place_target]['rpy'])
-            rospy.sleep(1)
-            self.go_home()
+            for model in self.spawned_models:
+                if model[1] == place_target:
+                    model_name = 'conflict'
+                    break
+            if model_name == 'conflict':
+                rospy.loginfo(f"There already is a sphere on marker '{place_target}'.")
+            else:
+                # Set up waypoints
+                pick_approach = self.marker_dict[pick_target]['xyz'].copy()
+                pick_approach[2] = 0.95
+                pick = self.marker_dict[pick_target]['xyz'].copy()
+                place_approach = self.marker_dict[place_target]['xyz'].copy()
+                place_approach[2] = 0.95
+                place = self.marker_dict[place_target]['xyz'].copy()
+                # Execute pick and place
+                self.go_to_xyz_rpy(pick_approach, self.marker_dict[pick_target]['rpy'])
+                self.set_gripper_span(0.09)
+                rospy.sleep(2)
+                self.go_to_xyz_rpy(pick, self.marker_dict[pick_target]['rpy'])
+                # Close the gripper sligthly less than the real width, helps achieve grasp
+                self.set_gripper_span(0.023)
+                if model_name is not None:
+                    # Attach the sphere to the gripper in the planning scene
+                    grasping_group = "edo_gripper"
+                    touch_links = self.robot.get_link_names(group=grasping_group)
+                    self.scene.attach_box(self.eef_link, model_name, touch_links=touch_links)
+                    self.wait_for_state_update(name=model_name, is_known=False, is_attached=True, timeout=4)
+                rospy.sleep(2)
+                self.go_to_xyz_rpy(pick_approach, self.marker_dict[pick_target]['rpy'])
+                rospy.sleep(2)
+                self.go_to_xyz_rpy(place_approach, self.marker_dict[place_target]['rpy'])
+                rospy.sleep(2)
+                self.go_to_xyz_rpy(place, self.marker_dict[place_target]['rpy'])
+                self.set_gripper_span(0.09)
+                if model_name is not None:
+                    # Detach the sphere from the gripper in the planning scene
+                    self.scene.remove_attached_object(self.eef_link, name=model_name)
+                    self.wait_for_state_update(name=model_name, is_known=True, is_attached=False, timeout=4)
+                    for model in self.spawned_models:
+                        if model[1] == pick_target:
+                            model = list(model)
+                            break
+                    model[1] = place_target
+                    # Update the sphere's marker
+                    self.spawned_models = [x for x in self.spawned_models if x[0] != model_name]
+                    self.spawned_models.append(tuple(model))
+                rospy.sleep(2)
+                self.go_to_xyz_rpy(place_approach, self.marker_dict[place_target]['rpy'])
+                rospy.sleep(2)
+                self.go_home()
 
     def cartesian(self, m1, m2, m3, m4):
         if m1.upper() not in self.marker_dict:
@@ -409,6 +414,9 @@ class EdoMoveGroupInterface(object):
     def spawn_model(self, xyz, model, timeout=4):
         if model not in ['box', 'sphere', 'cylinder']:
             rospy.loginfo(f"Invalid shape '{model}' for spawn command. Valid options are: 'box', 'sphere', 'cylinder'.")
+        elif type(xyz) == str and xyz not in self.marker_dict:
+            rospy.loginfo(f"Unknown marker '{xyz}'.")
+
         else:
             # Get the package's path
             rospack = rospkg.RosPack()
