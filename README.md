@@ -67,7 +67,10 @@ both ROS and the workspace must be sourced by executing:
 
 ### Standalone execution
 
-[GAZEBO W/ TERMINAL PICTURE]
+<p align="center">
+  <img src="https://github.com/lbusellato/rpc_project/blob/master/media/bash.gif"  width="600" height="480" />
+</p>
+
 
 The package can be launched as-is by executing:
 
@@ -80,7 +83,9 @@ the terminal, which are then excecuted by the ROS node.
 
 ### Execution with Rviz
 
-[GAZEBO W/ RVIZ PICTURE]
+<p align="center">
+  <img src="https://github.com/lbusellato/rpc_project/blob/master/media/rviz.gif"  width="600" height="480" />
+</p>
 
 The package can be launched alongside the Rviz plugin by executing:
 
@@ -94,7 +99,9 @@ between the starting and end points using MoveIt's planner.
 
 ### Execution with rqt GUI
 
-[GAZEBO W/ RQT GUI PICTURE]
+<p align="center">
+  <img src="https://github.com/lbusellato/rpc_project/blob/master/media/edo_gui.gif"  width="600" height="480" />
+</p>
 
 The package can be launched alongside the rqt GUI by executing:
 
