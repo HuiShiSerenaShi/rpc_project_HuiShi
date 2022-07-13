@@ -371,7 +371,43 @@ since both values are already known. The main edits to the plugin are in the
 
 ### Pick and place sample task
 
+First of all, the robot was jogged manually using the rqt plugin in order to 
+register the xyz coordinates of all markers on the working board, as well as the
+corresponding rpy orientation of the end effector.
+
+The [*pick_and_place*](https://github.com/lbusellato/rpc_project/blob/master/edo/src/edo_move_group_interface.py#L306) function takes as arguments the marker where to
+pick the sphere and the marker where to place it. The task is divided in several
+steps:
+
+* Pick approach: the end-effector goes 5 millimeters above the pick marker, then the gripper fully opens.
+* Pick: the end effector lowers itself on the pick marker, then the gripper closes and
+grasps the sphere.
+* Pick approach: the end-effector goes back to the pick approach location.
+* Place approach: the end-effector goes 5 millimeters above the place marker
+* Place: the end-effector lowers itself on the place marker, then the gripper opens
+and the sphere is released.
+* Place approach: the end-effector goes back to the place approach location.
+* Homing: the robot returns to the home position.
+
+In the pick step the sphere, if it exists, is attached to the end-effector in the
+planning scene. This ensures that in the following steps the planner will take into
+account the bounding box of the sphere for collision checking, as well as its mass and
+inertia. In the place step the sphere, if a sphere was picked, is detached from
+the end-effector in the planning scene.
+
+The gripper span set for the pick step is slightly smaller than the actual diameter
+of the sphere (0.025 mm). This helps in consistently achieving the grasp. In a 
+real robot this value should probably be equal to the actual width of the object
+to be picked.
+
 ### Cartesian path planning sample task
+
+The [*cartesian*](https://github.com/lbusellato/rpc_project/blob/master/edo/src/edo_move_group_interface.py#L372) function takes as arguments four markers between
+which to plan a cartesian trajectory. It does so by first computing a corresponding
+list of four poses, which is then passed to the MoveGroupInterface's *plan_cartesian_path* function. The planner returns a motion plan and a numeric 
+value representing the fraction of the path that it was able to generate successfully.
+If the fraction is equal to 1, i.e. if all of the path was generated, the plan is
+then executed.
 
 ## Acknowledgements
 
