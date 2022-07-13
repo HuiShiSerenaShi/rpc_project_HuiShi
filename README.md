@@ -81,6 +81,14 @@ launching an rqt-gui interface. In this case user interaction is achieved by
 direct manipulation of the joints of the robot, without the use of MoveIt's 
 planning interface.
 
+### Terminating the execution
+
+To terminate the execution, in the terminal where __edo.launch__ was launched, first kill the instance of EdoConsole by issuing the command:
+
+    kill
+
+Then, once the process exits, terminate the EdoMoveGroupInterface by pressing CTRL+C.
+
 ## Example tasks
 
 ### Pick and place
@@ -106,7 +114,7 @@ to the home position.
 The resulting execution should be similar to this:
 
 <p align="center">
-  <img src="https://github.com/lbusellato/rpc_project/blob/master/media/pnp.gif" />
+  <img src="https://github.com/lbusellato/rpc_project/blob/master/media/pnp.gif"  width="450" height="450" />
 </p>
 
 Note that different behaviors can arise during different executions, depending on
@@ -129,7 +137,7 @@ from A to W, then finally from W to S.
 The resulting execution should be similar to this:
 
 <p align="center">
-  <img src="https://github.com/lbusellato/rpc_project/blob/master/media/cartesian.gif" />
+  <img src="https://github.com/lbusellato/rpc_project/blob/master/media/cartesian.gif"  width="450" height="450"/>
 </p>
 
 ## Implementation details
@@ -282,6 +290,13 @@ reliable and realistic enough.
 
 ### EdoConsole
 
+<p align="center">
+  <img src="https://github.com/lbusellato/rpc_project/blob/master/media/edo_console.png" width="450" height="250" />
+</p>
+<p align="center">
+  <em>EdoConsole</em>
+</p>
+
 The main user interaction with the robot is through a terminal-like interface 
 implemented by the [__edo_console.py__](https://github.com/lbusellato/rpc_project/blob/master/edo/src/edo_console.py) node.
 
@@ -316,6 +331,13 @@ The implemented commands are:
 * __delete__ name: Deletes the shape with the given name
 
 ### rqt_joint_trajectory_controller
+
+<p align="center">
+  <img src="https://github.com/lbusellato/rpc_project/blob/master/media/edo_gui.png" width="450" height="450" />
+</p>
+<p align="center">
+  <em>Edo GUI</em>
+</p>
 
 To offer a more intuitive way of manipulating the robot, a GUI was implemented, 
 based on the [joint_trajectory_controller](https://github.com/ros-controls/ros_controllers) plugin for rqt.

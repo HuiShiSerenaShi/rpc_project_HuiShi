@@ -52,7 +52,6 @@ class EdoGripperControl(object):
         self.set_gripper_span(self.desired_span)
 
     def on_joint_state_msg(self, msg: JointState):
-        print("Yeah")
         # we are only looking for one of the current angles for the base joint
         base_angle = 0
         found = False
