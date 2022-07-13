@@ -335,6 +335,8 @@
         <link name="${robot_prefix}_link_ee">
         </link>
 
+        
+
         <!--Extensions -->
         <xacro:edo_gazebo robot_name="${robot_name}" robot_prefix="${robot_prefix}" />
         <xacro:edo_transmission hardware_interface="${hardware_interface}"/>

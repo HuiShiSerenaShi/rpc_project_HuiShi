@@ -36,6 +36,8 @@ class EdoMoveGroupInterface(object):
         # Handling of trajectory generation and following
         group_name = "edo"
         self.edo_move_group = MoveGroupCommander(group_name)
+        self.edo_move_group.set_num_planning_attempts(10)
+        self.edo_move_group.allow_replanning(True)
 
         # Publishes the ghost trajectory for Rviz
         self.display_trajectory_publisher = rospy.Publisher(
@@ -58,7 +60,7 @@ class EdoMoveGroupInterface(object):
         self.model_counter = 0
 
         # xyz-rpy coords of the marked circles in the workspace
-        marker_height = 0.9
+        marker_height = 0.89
         self.marker_dict = {
             "A" : { 'xyz' : [ 0.405, 0.295, marker_height], 'rpy' : [173, 6, 168]},
             "B" : { 'xyz' : [ 0.295, 0.405, marker_height], 'rpy' : [173, 6, -174]},
@@ -86,16 +88,11 @@ class EdoMoveGroupInterface(object):
             "Z" : { 'xyz' : [ 0.000, -0.500, marker_height], 'rpy' : [173, 6, 42]},
         }
 
-        # Pick and place targets
-        self.pick_target = "A"
-        self.place_target = "Z"
-        # Cartesian traj targets
-        self.cartesian_targets = ["A", "B", "F", "E"]
-
         # Bring the robot home
         self.go_home()
 
-        rospy.loginfo("Initialized edo MoveGroupInterface.")
+        # Spawn the cylinders for pick and place
+        self.spawn_cylinders()
 
         # Dictionary of console commands
         self.commands = {
@@ -143,9 +140,9 @@ class EdoMoveGroupInterface(object):
                         "args" : ['markerA', 'markerB'],
                         "types" : [str, str],
                         "callback" : self.pick_and_place },
-            "pnp_target" :  { "desc" : "Spawns a sphere-cylinder setup in the given markers.",
-                            "args" : ['markerA', 'markerB'],
-                            "types" : [str, str],
+            "pnp_target" :  { "desc" : "Spawns a sphere in the given marker.",
+                            "args" : ['marker'],
+                            "types" : [str],
                             "callback" : self.set_pnp_target },
             "cartesian" :  { "desc" : "Plans and executes a cartesian path between the given markers.",
                             "args" : ['m1', 'm2', 'm3', 'm4'],
@@ -161,10 +158,13 @@ class EdoMoveGroupInterface(object):
                         "callback" : self.delete_model },
         }
 
+        rospy.loginfo("Initialized edo MoveGroupInterface.")
+
         # Start keyboard handling thread
         console = edo_console.EdoConsole(self.commands)
 
     def set_home(self):
+        # Change the home position
         home = self.edo_move_group.get_current_joint_values()  
         self.home = home
 
@@ -183,13 +183,26 @@ class EdoMoveGroupInterface(object):
         current_joints = self.edo_move_group.get_current_joint_values()
         return edo_utils.all_close(joint_goal, current_joints, 0.01)
 
+    def pose_from_xyz_rpy(self, xyz, rpy):
+        # Computes a pose message from the given xyz coords and rpy orientation
+        pose = Pose()
+        pose.position.x = xyz[0]
+        pose.position.y = xyz[1]
+        pose.position.z = xyz[2]
+        # Compute the quaternion orientation from rpy
+        new_orientation = quaternion_from_euler(rpy[0]*DEG2RAD, rpy[1]*DEG2RAD, rpy[2]*DEG2RAD)
+        pose.orientation.x = new_orientation[0]
+        pose.orientation.y = new_orientation[1]
+        pose.orientation.z = new_orientation[2]
+        pose.orientation.w = new_orientation[3]
+        return pose
+
     def go_to_xyz_rpy(self, xyz, rpy):
+        # Go to a pose defined by xyz coords and rpy orientation
         pose = self.pose_from_xyz_rpy(xyz, rpy)
         self.go_to_pose_goal(pose)
 
     def go_to_pose_goal(self, pose_goal):
-        self.edo_move_group.set_num_planning_attempts(10)
-        self.edo_move_group.allow_replanning(True)
         # Pass a pose for the move group to go to
         self.edo_move_group.set_pose_target(pose_goal)
         self.edo_move_group.go(wait=True)
@@ -202,6 +215,7 @@ class EdoMoveGroupInterface(object):
         return edo_utils.all_close(pose_goal, current_pose, 0.01)
 
     def go_to_marker(self, marker):
+        # Bring the robot to the given marker
         if marker.upper() not in self.marker_dict:
             rospy.loginfo(f"Unknown marker '{marker}'")
         else:
@@ -284,48 +298,70 @@ class EdoMoveGroupInterface(object):
         display_trajectory.trajectory.append(plan)
         self.display_trajectory_publisher.publish(display_trajectory)
 
-    def set_pnp_target(self, pick, place):
-        pick_cylinder = self.marker_dict[pick.upper()]['xyz'].copy()
-        pick_cylinder[2] -= 0.07
-        place_cylinder = self.marker_dict[place.upper()]['xyz'].copy()
-        place_cylinder[2] -= 0.07
-        sphere = self.marker_dict[pick.upper()]['xyz'].copy()
-        self.spawn_model(pick_cylinder, 'cylinder')
-        self.spawn_model(place_cylinder, 'cylinder')
+    def set_pnp_target(self, marker):
+        # Spawn a sphere at the given marker
+        sphere = self.marker_dict[marker.upper()]['xyz'].copy()
         self.spawn_model(sphere, 'sphere')
 
     def pick_and_place(self, pick, place):
-        self.pick_target = pick.upper()
-        self.place_target = place.upper()
-        if self.pick_target not in self.marker_dict:
-            rospy.loginfo(f"Argument '{self.pick_target}' is not a known marker.")
-        elif self.place_target not in self.marker_dict:
-            rospy.loginfo(f"Argument '{self.place_target}' is not a known marker.")
+        pick_target = pick.upper()
+        place_target = place.upper()
+        if pick_target not in self.marker_dict:
+            rospy.loginfo(f"Argument '{pick_target}' is not a known marker.")
+        elif place_target not in self.marker_dict:
+            rospy.loginfo(f"Argument '{place_target}' is not a known marker.")
+        elif self.find_marker(self.marker_dict[place_target]['xyz']) != '':
+            rospy.loginfo(f"There already is a sphere on marker '{place_target}'.")
         else:
             rospy.loginfo("Executing pick and place.")
+            # Check if a sphere does exist at the marker
+            model_name = None
+            for model in self.spawned_models:
+                if model[1] == pick_target:
+                    model_name = model[0]
+                    break
             # Set up waypoints
-            pick_approach = self.marker_dict[self.pick_target]['xyz'].copy()
+            pick_approach = self.marker_dict[pick_target]['xyz'].copy()
             pick_approach[2] = 0.95
-            pick = self.marker_dict[self.pick_target]['xyz'].copy()
-            place_approach = self.marker_dict[self.place_target]['xyz'].copy()
+            pick = self.marker_dict[pick_target]['xyz'].copy()
+            place_approach = self.marker_dict[place_target]['xyz'].copy()
             place_approach[2] = 0.95
-            place = self.marker_dict[self.place_target]['xyz'].copy()
+            place = self.marker_dict[place_target]['xyz'].copy()
             # Execute pick and place
-            self.go_to_xyz_rpy(pick_approach, self.marker_dict[self.pick_target]['rpy'])
+            self.go_to_xyz_rpy(pick_approach, self.marker_dict[pick_target]['rpy'])
             self.set_gripper_span(0.09)
-            rospy.sleep(2)
-            self.go_to_xyz_rpy(pick, self.marker_dict[self.pick_target]['rpy'])
+            rospy.sleep(1)
+            self.go_to_xyz_rpy(pick, self.marker_dict[pick_target]['rpy'])
             # Close the gripper sligthly less than the real width, helps achieve grasp
             self.set_gripper_span(0.023)
-            rospy.sleep(2)
-            self.go_to_xyz_rpy(pick_approach, self.marker_dict[self.pick_target]['rpy'])
-            rospy.sleep(2)
-            self.go_to_xyz_rpy(place_approach, self.marker_dict[self.place_target]['rpy'])
-            rospy.sleep(2)
-            self.go_to_xyz_rpy(place, self.marker_dict[self.place_target]['rpy'])
+            if model_name is not None:
+                # Attach the sphere to the gripper in the planning scene
+                grasping_group = "edo_gripper"
+                touch_links = self.robot.get_link_names(group=grasping_group)
+                self.scene.attach_box(self.eef_link, model_name, touch_links=touch_links)
+                self.wait_for_state_update(name=model_name, is_known=False, is_attached=True, timeout=4)
+            rospy.sleep(1)
+            self.go_to_xyz_rpy(pick_approach, self.marker_dict[pick_target]['rpy'])
+            rospy.sleep(1)
+            self.go_to_xyz_rpy(place_approach, self.marker_dict[place_target]['rpy'])
+            rospy.sleep(1)
+            self.go_to_xyz_rpy(place, self.marker_dict[place_target]['rpy'])
             self.set_gripper_span(0.09)
-            rospy.sleep(2)
-            self.go_to_xyz_rpy(place_approach, self.marker_dict[self.place_target]['rpy'])
+            if model_name is not None:
+                # Detach the sphere from the gripper in the planning scene
+                self.scene.remove_attached_object(self.eef_link, name=model_name)
+                self.wait_for_state_update(name=model_name, is_known=True, is_attached=False, timeout=4)
+                for model in self.spawned_models:
+                    if model[1] == pick_target:
+                        model = list(model)
+                        break
+                model[1] = place_target
+                # Update the sphere's marker
+                self.spawned_models = [x for x in self.spawned_models if x[0] != model_name]
+                self.spawned_models.append(tuple(model))
+            rospy.sleep(1)
+            self.go_to_xyz_rpy(place_approach, self.marker_dict[place_target]['rpy'])
+            rospy.sleep(1)
             self.go_home()
 
     def cartesian(self, m1, m2, m3, m4):
@@ -338,34 +374,37 @@ class EdoMoveGroupInterface(object):
         elif m4.upper() not in self.marker_dict:
             rospy.loginfo(f"Argument '{m4}' is not a known marker.")
         else:
+            # Get the poses from the markers
             poses = [
                 self.pose_from_xyz_rpy(self.marker_dict[m2.upper()]['xyz'], self.marker_dict[m2.upper()]['rpy']),
                 self.pose_from_xyz_rpy(self.marker_dict[m3.upper()]['xyz'], self.marker_dict[m3.upper()]['rpy']),
                 self.pose_from_xyz_rpy(self.marker_dict[m4.upper()]['xyz'], self.marker_dict[m4.upper()]['rpy']),
                 self.pose_from_xyz_rpy(self.marker_dict[m1.upper()]['xyz'], self.marker_dict[m1.upper()]['rpy']),
             ]
+            # Bring the robot close to the starting point
             self.go_to_pose_goal(poses[3])
-            rospy.sleep(1)
+            # Plan the path
             (plan, fraction) = self.plan_cartesian_path(poses)
+            # Execute the plan only if it has fully been computed
             if fraction != 1.0:
                 rospy.loginfo("No cartesian path exists that passes through the given markers.")
             else:
                 self.execute_plan(plan)
 
-    def pose_from_xyz_rpy(self, xyz, rpy):
-        # Computes a pose message from the given xyz coords and rpy orientation
-        pose = Pose()
-        pose.position.x = xyz[0]
-        pose.position.y = xyz[1]
-        pose.position.z = xyz[2]
-        # Compute the quaternion orientation from rpy
-        new_orientation = quaternion_from_euler(rpy[0]*DEG2RAD, rpy[1]*DEG2RAD, rpy[2]*DEG2RAD)
-        pose.orientation.x = new_orientation[0]
-        pose.orientation.y = new_orientation[1]
-        pose.orientation.z = new_orientation[2]
-        pose.orientation.w = new_orientation[3]
-        return pose
+    def spawn_cylinders(self):
+        # Spawn a cylinder at each marker on the surface
+        for marker in self.marker_dict:
+            cylinder = self.marker_dict[marker]['xyz'].copy()
+            cylinder[2] = 0.83
+            self.spawn_model(cylinder, 'cylinder')
 
+    def find_marker(self, xyz):
+        # Find the marker from a given coordinate
+        for marker in self.marker_dict:
+            mxyz = self.marker_dict[marker]['xyz'].copy()
+            if xyz[0] == mxyz[0] and xyz[1] == mxyz[1]:
+                return marker
+        return ""
 
     def spawn_model(self, xyz, model, timeout=4):
         if model not in ['box', 'sphere', 'cylinder']:
@@ -382,7 +421,10 @@ class EdoMoveGroupInterface(object):
                     urdf = f.read()
                 # Check if a marker letter was given
                 if type(xyz) == str:
+                    marker = xyz
                     xyz = self.marker_dict[xyz.upper()]['xyz'].copy()
+                else:
+                    marker = self.find_marker(xyz)
                 self.model_counter += 1
                 # Set up the pose for the pickable box
                 pose = Pose()
@@ -400,8 +442,8 @@ class EdoMoveGroupInterface(object):
                 pose_stamped = PoseStamped()
                 pose_stamped.header.frame_id = "world"
                 pose_stamped.pose = pose
-                # Add the model name to the list of spawned models
-                self.spawned_models.append(model_name)
+                # Add the model list of spawned models
+                self.spawned_models.append((model_name, marker if model == 'sphere' else ''))
                 # Add the model to the planning scene
                 if model == 'box':
                     self.scene.add_box(model_name, pose_stamped, size=(0.025, 0.025, 0.025))
@@ -409,7 +451,7 @@ class EdoMoveGroupInterface(object):
                     self.scene.add_sphere(model_name, pose_stamped, radius=0.0125)
                 elif model == 'cylinder':
                     mesh_path = os.path.join(rospack.get_path('edo'), 'meshes/visual/cylinder.dae')
-                    self.scene.add_mesh(name=model_name, pose=pose_stamped, filename=mesh_path, size=(0.4, 0.4, 0.1))
+                    self.scene.add_mesh(name=model_name, pose=pose_stamped, filename=mesh_path)
                 return self.wait_for_state_update(name=model_name, is_known=True, timeout=timeout)
             except rospy.ROSException:
                 rospy.logwarn("Timeout reached while waiting for spawn_urdf_model service.")
@@ -430,10 +472,7 @@ class EdoMoveGroupInterface(object):
             except rospy.ROSException:
                 rospy.logwarn("Timeout reached while waiting for delete_model service.")
             # Remove the object from the list of spawned models
-            try:
-                self.spawned_models.remove(model_name)
-            except ValueError: # This shouldn't really ever happen
-                rospy.logwarn("delete_model failed")
+            self.spawned_models = [x for x in self.spawned_models if x[0] != model_name]
 
     def kill(self):
         # Stop the robot
@@ -442,8 +481,8 @@ class EdoMoveGroupInterface(object):
         rospy.wait_for_service("/gazebo/delete_model", timeout=4)
         delete_model = rospy.ServiceProxy("/gazebo/delete_model", DeleteModel)
         for s in self.spawned_models:
-            delete_model(s)
-            self.scene.remove_world_object(s)
+            delete_model(s[0])
+            self.scene.remove_world_object(s[0])
         rospy.loginfo("Stop key received, stopping...")
         # Shutdown rospy and kill the process
         rospy.signal_shutdown("Stop key received.")
