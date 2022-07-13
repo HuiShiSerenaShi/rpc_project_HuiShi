@@ -140,6 +140,18 @@ The resulting execution should be similar to this:
 ## Implementation details
 
 ### Workspace modeling and URDF integration
+The work area is modeled as similar as possible to the position of the COMAU e.DO ™ robotic manipulator in the univr ICE laboratory. 
+Infact the manipulator is on a table of dimension (1.30x1.30x0.83). 
+To create the model of the table it was necessary to divide it into two phases, the virtual creation of the table according to the established measurements (by software Blender) and the dashboard on which it is possible to map the movements of the manipulator with precise coordinates (CAD).
+
+
+Subsequently the two models were joined, the final model exported in file __.dae__ and finally imported into the gazebo by inserting its box in the robot workspace in order to have a collision in case the two objects touch each other, this in file [__edo.xacro__]. The table was then fixed to the world by creating the link between the parent (world) and the table.
+Once this was done, the same thing was done for the manipulator which was positioned above the table and updated the link between the table and the base of the robot.
+
+
+<p align="center">
+  ![Edo](https://user-images.githubusercontent.com/65706284/178739196-1cbe5226-35d0-4938-954e-8b6b620f9d67.png)
+</p>
 
 ### MoveGroupInterface implementation
 
@@ -148,21 +160,21 @@ The '''edo_move_group_interface''' node is the first feedback we get by running 
 It contains information about the positions in which the EE must stand in order to be in the correct position for each target.
 In addition, it implements the following functions:
 
-*__kill__ : Kill the execution 
-*__set__ : Sets the given joint to the given angle in degrees
-*__move__ : Moves the given joint by the given angle in degrees
-*__set_gripper__ : Sets the gripper's span to the given width in millimeters
-*__goto__ : Moves the robot to the given marker
-*__home__ : Moves the robot to the home position
-*__set_home__ : Sets the current joint state as the home position
-*__print_joint__ : Prints the current joint state
-*__print_cartesian__ : Prints the current pose
-*__print_rpy__ : Prints the current rpy orientation of the EE
-*__pnp__ : Executes pick and place between markerA and markerB
-*__pnp_target__ : Spawns a sphere-cylinder setup in the given markers
-*__cartesian__ : Plans and executes a cartesian path between the given markers
-*__spawn__ : Spawns a shape at the given marker
-*__delete__: Deletes the shape with the given name
+* __kill__ : Kill the execution 
+* __set__ : Sets the given joint to the given angle in degrees
+* __move__ : Moves the given joint by the given angle in degrees
+* __set_gripper__ : Sets the gripper's span to the given width in millimeters
+* __goto__ : Moves the robot to the given marker
+* __home__ : Moves the robot to the home position
+* __set_home__ : Sets the current joint state as the home position
+* __print_joint__ : Prints the current joint state
+* __print_cartesian__ : Prints the current pose
+* __print_rpy__ : Prints the current rpy orientation of the EE
+* __pnp__ : Executes pick and place between markerA and markerB
+* __pnp_target__ : Spawns a sphere-cylinder setup in the given markers
+* __cartesian__ : Plans and executes a cartesian path between the given markers
+* __spawn__ : Spawns a shape at the given marker
+* __delete__: Deletes the shape with the given name
 
 This node is supported by edo_console, which menage every argoment passed by line of command.
 
@@ -170,10 +182,21 @@ This node is supported by edo_console, which menage every argoment passed by lin
 ### IKFast inverse kinematics plugin
 
 ### EdoGripper
+The considered end effector is a gripper with two fingers that is installed on the wrist of the robot, the presence of the prismatic joint allows a linear movement, to open and close the two fingers like figure:
+
+<p align="center">
+  ![edo gripper](https://user-images.githubusercontent.com/65706284/178744556-68d61dad-11ab-4cf5-a4bd-549f5f0cf355.png)
+</p>
+
+To manage the gripper at end effector it's used edo_gripper_node.py is a node implements the corret position and operation of the gripper. 
+It initialize the gripper and keeps track of the state of the gripper.
+
 
 ### Gazebo Grasp Fix Plugin
 
 ### EdoConsole
+Edo_console as explained above, acts as an intermediary for the communication between the commands indicated by the user and the manipulator.
+In fact, it allows the conversion of terminal data and offers the user all the possible commands to execute.
 
 ### rqt_joint_trajectory_controller
 
