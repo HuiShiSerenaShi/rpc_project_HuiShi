@@ -143,6 +143,30 @@ The resulting execution should be similar to this:
 
 ### MoveGroupInterface implementation
 
+The '''edo_move_group_interface''' node is the first feedback we get by running the command ('''rosrun edo main.py _ns: = edo''') it allows us to send commands by terminal to the robot to move it or to obtain information from it, such as the location of the joints, or EE.
+
+It contains information about the positions in which the EE must stand in order to be in the correct position for each target.
+In addition, it implements the following functions:
+
+*__kill__ : Kill the execution 
+*__set__ : Sets the given joint to the given angle in degrees
+*__move__ : Moves the given joint by the given angle in degrees
+*__set_gripper__ : Sets the gripper's span to the given width in millimeters
+*__goto__ : Moves the robot to the given marker
+*__home__ : Moves the robot to the home position
+*__set_home__ : Sets the current joint state as the home position
+*__print_joint__ : Prints the current joint state
+*__print_cartesian__ : Prints the current pose
+*__print_rpy__ : Prints the current rpy orientation of the EE
+*__pnp__ : Executes pick and place between markerA and markerB
+*__pnp_target__ : Spawns a sphere-cylinder setup in the given markers
+*__cartesian__ : Plans and executes a cartesian path between the given markers
+*__spawn__ : Spawns a shape at the given marker
+*__delete__: Deletes the shape with the given name
+
+This node is supported by edo_console, which menage every argoment passed by line of command.
+
+
 ### IKFast inverse kinematics plugin
 
 ### EdoGripper
