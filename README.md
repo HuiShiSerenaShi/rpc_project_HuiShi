@@ -13,6 +13,30 @@ bringup of the robot in a Gazebo simulation, with the possibility of using Rviz
 for the path planning with MoveIt or a rqt plugin for the manual control of the 
 robot's joints.
 
+## Table Of Contents
+
+- [MoveIt interface for a simulated COMAU e.DO™ manipulator](#moveit-interface-for-a-simulated-comau-edo--manipulator)
+  * [Setup](#setup)
+  * [Usage](#usage)
+    + [Standalone execution](#standalone-execution)
+    + [Execution with Rviz](#execution-with-rviz)
+    + [Execution with rqt GUI](#execution-with-rqt-gui)
+    + [Terminating the execution](#terminating-the-execution)
+  * [Example tasks](#example-tasks)
+    + [Pick and place](#pick-and-place)
+    + [Cartesian path planning](#cartesian-path-planning)
+  * [Implementation details](#implementation-details)
+    + [Workspace modeling and URDF integration](#workspace-modeling-and-urdf-integration)
+    + [MoveGroupInterface implementation](#movegroupinterface-implementation)
+    + [IKFast inverse kinematics plugin](#ikfast-inverse-kinematics-plugin)
+    + [EdoGripper](#edogripper)
+    + [Gazebo Grasp Fix Plugin](#gazebo-grasp-fix-plugin)
+    + [EdoConsole](#edoconsole)
+    + [rqt_joint_trajectory_controller](#rqt-joint-trajectory-controller)
+    + [Pick and place sample task](#pick-and-place-sample-task)
+    + [Cartesian path planning sample task](#cartesian-path-planning-sample-task)
+  * [Acknowledgements](#acknowledgements)
+
 ## Setup
 
 The package was developed and tested on Ubuntu 20.04. Compatibility with other 
@@ -89,7 +113,7 @@ To terminate the execution, in the terminal where __edo.launch__ was launched, f
 
 Then, once the process exits, terminate the EdoMoveGroupInterface by pressing CTRL+C.
 
-## Example tasks
+## Sample tasks
 
 ### Pick and place
 
@@ -122,10 +146,8 @@ the optimization steps performed by the planner.
 
 ### Cartesian path planning
 
-The ```edo_move_group_interface``` node implements a Cartesian trajectory planning
-task between four given markers on the work surface. In the current implementation
-it is not possible to have two consecutive markers in the I through L and O 
-through R regions, because the end-effector would have to cross
+The ```edo_move_group_interface``` node implements a cartesian trajectory planning
+task between four given markers on the work surface. Note that not all four-marker combinations result in a feasible cartesian path. For instance having two consecutive markers from the inner region (i.e. I through L and O through R) results in a failed plan, because the manipulator is too close to the joint limits.
 
 To plan and execute the path one can execute the command:
 
@@ -204,6 +226,7 @@ The node implements all basic capabilities of the MoveGroupInterface and Plannin
 
 * Moving the robot to a desired joint goal, with the [*go_to_joint_state*](https://github.com/lbusellato/rpc_project/blob/master/edo/src/edo_move_group_interface.py#L177) function.
 * Moving the robot to a desired pose goal, with the [*go_to_pose_goal*](https://github.com/lbusellato/rpc_project/blob/master/edo/src/edo_move_group_interface.py#L205) function.
+* Moving the robot to a desired xyz coordinate with a given rpy orientation of the end-effector, with the [*go_to_xyz_rpy*](https://github.com/lbusellato/rpc_project/blob/master/edo/src/edo_move_group_interface.py#L200) function.
 * The planning of paths in cartesian space, with the [*plan_cartesian_path*](https://github.com/lbusellato/rpc_project/blob/master/edo/src/edo_move_group_interface.py#L241) function.
 * The execution of the computed plan, with the [*execute_plan*](https://github.com/lbusellato/rpc_project/blob/master/edo/src/edo_move_group_interface.py#L249) function.
 * The spawning of objects in the world, with the [*spawn_model*](https://github.com/lbusellato/rpc_project/blob/master/edo/src/edo_move_group_interface.py#L414) function.
@@ -345,6 +368,10 @@ based on the [joint_trajectory_controller](https://github.com/ros-controls/ros_c
 The plugin was modified by adding a slider for the control of the gripper and by removing the interface for the choosing of the arm controller and namespace, 
 since both values are already known. The main edits to the plugin are in the 
 [__joint_trajectory_controller.py](https://github.com/lbusellato/rpc_project/blob/master/edo/src/rqt_joint_trajectory_controller/joint_trajectory_controller.py) file.
+
+### Pick and place sample task
+
+### Cartesian path planning sample task
 
 ## Acknowledgements
 
