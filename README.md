@@ -109,8 +109,7 @@ The package can be launched alongside the rqt GUI by executing:
 
 The launch file does everything the standalone case does, with the addition of
 launching an rqt-gui interface. In this case user interaction is achieved by 
-direct manipulation of the joints of the robot, without the use of MoveIt's 
-planning interface.
+direct manipulation of the joints of the robot, with the use of a set of sliders.
 
 ### Terminating the execution
 
