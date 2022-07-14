@@ -244,11 +244,13 @@ class EdoMoveGroupInterface(object):
             waypoints.append(copy.deepcopy(pose))
         # Generate a motion plan from the list of poses
         (plan, fraction) = self.edo_move_group.compute_cartesian_path(waypoints, 0.0001, 0.0)
+        rospy.loginfo(f"Finished computing plan.")
         return plan, fraction
 
     def execute_plan(self, plan):
         # Execute a precomputed motion plan
         self.edo_move_group.execute(plan, wait=True)
+        rospy.loginfo(f"Finished executing plan.")
 
     def set_gripper_span(self, span):
         # Publish the desired gripper width
@@ -299,9 +301,13 @@ class EdoMoveGroupInterface(object):
         self.display_trajectory_publisher.publish(display_trajectory)
 
     def set_pnp_target(self, marker):
-        # Spawn a sphere at the given marker
-        sphere = self.marker_dict[marker.upper()]['xyz'].copy()
-        self.spawn_model(sphere, 'sphere')
+        if marker.upper() not in self.marker_dict:
+            rospy.loginfo(f"'{marker}' is not a known marker.")
+        else:
+            rospy.loginfo(f"Spawned a sphere on marker '{marker}'")
+            # Spawn a sphere at the given marker
+            sphere = self.marker_dict[marker.upper()]['xyz'].copy()
+            self.spawn_model(sphere, 'sphere')
 
     def pick_and_place(self, pick, place):
         pick_target = pick.upper()
@@ -311,7 +317,6 @@ class EdoMoveGroupInterface(object):
         elif place_target not in self.marker_dict:
             rospy.loginfo(f"Argument '{place_target}' is not a known marker.")
         else:
-            rospy.loginfo("Executing pick and place.")
             # Check if a sphere does exist at the marker
             model_name = None
             for model in self.spawned_models:
@@ -325,6 +330,7 @@ class EdoMoveGroupInterface(object):
             if model_name == 'conflict':
                 rospy.loginfo(f"There already is a sphere on marker '{place_target}'.")
             else:
+                rospy.loginfo("Executing pick and place.")
                 # Set up waypoints
                 pick_approach = self.marker_dict[pick_target]['xyz'].copy()
                 pick_approach[2] = 0.95
@@ -371,13 +377,13 @@ class EdoMoveGroupInterface(object):
 
     def cartesian(self, m1, m2, m3, m4):
         if m1.upper() not in self.marker_dict:
-            rospy.loginfo(f"Argument '{m1}' is not a known marker.")
+            rospy.loginfo(f"'{m1}' is not a known marker.")
         elif m2.upper() not in self.marker_dict:
-            rospy.loginfo(f"Argument '{m2}' is not a known marker.")
+            rospy.loginfo(f"'{m2}' is not a known marker.")
         elif m3.upper() not in self.marker_dict:
-            rospy.loginfo(f"Argument '{m3}' is not a known marker.")
+            rospy.loginfo(f"'{m3}' is not a known marker.")
         elif m4.upper() not in self.marker_dict:
-            rospy.loginfo(f"Argument '{m4}' is not a known marker.")
+            rospy.loginfo(f"'{m4}' is not a known marker.")
         else:
             # Get the poses from the markers
             poses = [
@@ -394,6 +400,7 @@ class EdoMoveGroupInterface(object):
             if fraction != 1.0:
                 rospy.loginfo("No cartesian path exists that passes through the given markers.")
             else:
+                rospy.loginfo("Executing cartesian path.")
                 self.execute_plan(plan)
 
     def spawn_cylinders(self):
@@ -415,8 +422,7 @@ class EdoMoveGroupInterface(object):
         if model not in ['box', 'sphere', 'cylinder']:
             rospy.loginfo(f"Invalid shape '{model}' for spawn command. Valid options are: 'box', 'sphere', 'cylinder'.")
         elif type(xyz) == str and xyz not in self.marker_dict:
-            rospy.loginfo(f"Unknown marker '{xyz}'.")
-
+            rospy.loginfo(f"'{xyz}' is not a known marker.")
         else:
             # Get the package's path
             rospack = rospkg.RosPack()
