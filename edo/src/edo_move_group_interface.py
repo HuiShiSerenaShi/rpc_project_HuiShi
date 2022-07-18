@@ -243,7 +243,10 @@ class EdoMoveGroupInterface(object):
         for pose in poses:
             waypoints.append(copy.deepcopy(pose))
         # Generate a motion plan from the list of poses
-        (plan, fraction) = self.edo_move_group.compute_cartesian_path(waypoints, 0.0001, 0.0)
+        resolution = 0.0001 # Used to generate intermediate waypoints
+        jump_threshold = 0.0
+        (plan, fraction) = self.edo_move_group.compute_cartesian_path(waypoints, 
+                            eef_step=resolution, jump_threshold=jump_threshold)
         rospy.loginfo(f"Finished computing plan.")
         return plan, fraction
 

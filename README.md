@@ -231,12 +231,28 @@ of the robot's end-effector.
 The node implements all basic capabilities of the MoveGroupInterface and PlanningSceneInterface classes, namely:
 
 * Moving the robot to a desired joint goal, with the [*go_to_joint_state*](https://github.com/lbusellato/rpc_project/blob/master/edo/src/edo_move_group_interface.py#L177) function.
+
+  This is implented by directly passing the joint state goal to the MoveGroup's 
+  *go* function.
 * Moving the robot to a desired pose goal, with the [*go_to_pose_goal*](https://github.com/lbusellato/rpc_project/blob/master/edo/src/edo_move_group_interface.py#L205) function.
+
+  This is implemented by fist setting the MoveGroup's pose target, and then by
+  calling the *go* function.
 * Moving the robot to a desired xyz coordinate with a given rpy orientation of the end-effector, with the [*go_to_xyz_rpy*](https://github.com/lbusellato/rpc_project/blob/master/edo/src/edo_move_group_interface.py#L200) function.
+
+  This is implemented with the above descripted *go_to_pose_goal* function. The target pose is computed with the [*pose_from_xyz_rpy*](https://github.com/lbusellato/rpc_project/blob/master/edo/src/edo_move_group_interface.py#L186) function, which takes as input the xyz coordinates and rpy orientations and constructs a Pose message with them. The quaternion representing the orientation is computed from rpy with the *quaternion_from_euler* function of the *tf.transformations* module.
 * The planning of paths in cartesian space, with the [*plan_cartesian_path*](https://github.com/lbusellato/rpc_project/blob/master/edo/src/edo_move_group_interface.py#L241) function.
+
+  This is implemented simply by passing a list of waypoints to the MoveGroup's *compute_cartesian_path* function, which also takes as arguments an end-effector step value, for the generation of intermediate points between the provided waypoints, and a jump threshold, which controls the check for infeasible jumps in the joint space. By default the end-effector step is set to 0.0001 and the jump threshold is set to 0, disabling the jump check.
 * The execution of the computed plan, with the [*execute_plan*](https://github.com/lbusellato/rpc_project/blob/master/edo/src/edo_move_group_interface.py#L249) function.
+
+  This is just a wrapper around the MoveGroup's own *execute* function.
 * The spawning of objects in the world, with the [*spawn_model*](https://github.com/lbusellato/rpc_project/blob/master/edo/src/edo_move_group_interface.py#L414) function.
+
+  This is implemented by calling Gazebo's *spawn_urdf_model* service to make the model visually appear in the scene, and then by calling the PlanningSceneInterface's appropriate method (*add_box*, *add_sphere* or *add_mesh*) in order to add the object to the planning scene, so that the planner takes it into account while computing motion plans.
 * The removal of objects from the world, with the [*delete_model*](https://github.com/lbusellato/rpc_project/blob/master/edo/src/edo_move_group_interface.py#L468) function.
+
+  This is implemented by calling Gazebo's *delete_model* service to remove the object from the scene, and then by calling the PlanningSceneInterface's *remove_world_object* method, in order to remove the object from the planning scene.
 
 The node also implements the control of the gripper, with the [*set_gripper_span*](https://github.com/lbusellato/rpc_project/blob/master/edo/src/edo_move_group_interface.py#L253) function. The function interacts with the [__edo_gripper_node.py__](https://github.com/lbusellato/rpc_project/blob/master/edo/src/edo_gripper_node.py) node, 
 which actually handles the control of the gripper.
@@ -277,13 +293,14 @@ of the gripper.
 of the joints, which is used to update the current gripper's width.
 
 Once a message is received on the set_gripper_span topic, the node computes the
-correct values for the fingers of the gripper, publishing the results on the 
-following topics:
+correct angle values for the fingers of the gripper, publishing the results on the following topics:
 
 * edo_gripper_left_base_controller, Float64 message.
 * edo_gripper_left_finger_controller, Float64 message.
 * edo_gripper_right_base_controller, Float64 message.
 * edo_gripper_right_finger_controller, Float64 message.
+
+The values for the fingers are computed with a "magic formula", that comes from the linear regression of manual measures of the span of the gripper and the angle of the base fingers.
 
 The node also publishes the current status and width of the gripper on the 
 following topics:
@@ -293,7 +310,7 @@ respectively, moving or not.
 * edo_gripper_span, Float32 message containing the current width of the gripper.
 
 The gripper's width is updated with the update function, which is called within 
-a 10Hz control loop.
+a 10Hz control loop. The width is computed by inverting the previously described "magic formula".
 
 ### Gazebo Grasp Fix Plugin
 
@@ -313,9 +330,11 @@ settings for the plugin are:
 * release_tolerance: 0.005
 * disable_collisions_on_attach: true
 
-The meaning of each settings is explained on the [github page](https://github.com/JenniferBuehler/gazebo-pkgs/wiki/The-Gazebo-grasp-fix-plugin) of the plugin. 
+The meaning of each parameter is explained on the [github page](https://github.com/JenniferBuehler/gazebo-pkgs/wiki/The-Gazebo-grasp-fix-plugin) of the plugin. 
 These parameters were tuned during development, until the resulting grasp was
 reliable and realistic enough.
+
+The plugin basically works by checking if two opposing forces are applied by the gripper links on an object. If they are, the object is fixed to the end-effector link. When this check fails, the object is released.
 
 ### EdoConsole
 
