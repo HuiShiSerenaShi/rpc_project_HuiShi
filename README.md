@@ -45,7 +45,7 @@ distros or other operating systems is not guaranteed.
 The package requires a [ROS Noetic](http://wiki.ros.org/noetic) installation, as
 well as the MoveIt ROS packages, which can be installed with:
 
-    sudo apt-get install ros-noetic-moveit
+    sudo apt-get install ros-noetic-moveit ros-noetic-moveit-kinematics
 
 The package can then be installed as any other ROS package:
 
