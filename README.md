@@ -45,7 +45,8 @@ distros or other operating systems is not guaranteed.
 The package requires a [ROS Noetic](http://wiki.ros.org/noetic) installation, as
 well as the MoveIt ROS packages, which can be installed with:
 
-    sudo apt-get install ros-noetic-moveit ros-noetic-moveit-kinematics
+    sudo apt-get update
+    sudo apt-get install --reinstall ros-noetic-moveit ros-noetic-moveit-kinematics
 
 The package can then be installed as any other ROS package:
 
@@ -53,6 +54,13 @@ The package can then be installed as any other ROS package:
     cd ~/catkin_ws/src
     git clone https://github.com/lbusellato/rpc_project
     cd .. && catkin_make
+    
+If catkin_make gives errors related to Gazebo, it is suggested to reinstall the related
+ROS packages. For Gazebo version 11 this is done as follows:
+
+    sudo apt-get purge libgazebo11-dev
+    sudo apt-get update
+    sudo apt-get install libgazebo11-dev ros-noetic-gazebo-*
 
 ## Usage
 
