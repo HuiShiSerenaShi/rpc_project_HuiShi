@@ -428,10 +428,11 @@ account the bounding box of the sphere for collision checking, as well as its ma
 inertia. In the place step the sphere, if a sphere was picked, is detached from
 the end-effector in the planning scene.
 
-The gripper span set for the pick step is slightly smaller than the actual diameter
-of the sphere (0.025 mm). This helps in consistently achieving the grasp. In a 
-real robot this value should probably be equal to the actual width of the object
-to be picked.
+The gripper span set for the pick step is smaller (23 mm) than the actual diameter
+of the sphere (25 mm). This helps in consistently achieving the grasp. In a 
+real robot this value should probably be closer to the actual width of the object
+to be picked, but still slightly smaller in order to actually apply strong enough
+forces for the grasp.
 
 ### Cartesian path planning sample task
 

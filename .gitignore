@@ -1,0 +1,3 @@
+.vscode/
+edo/src/__pycache__/
+edo/src/rqt_joint_trajectory_controller/__pycache__/
