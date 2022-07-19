@@ -43,10 +43,13 @@ The package was developed and tested on Ubuntu 20.04. Compatibility with other
 distros or other operating systems is not guaranteed.
 
 The package requires a [ROS Noetic](http://wiki.ros.org/noetic) installation, as
-well as the MoveIt ROS packages, which can be installed with:
+well as the MoveIt and Gazebo ROS packages, which can be installed with:
 
     sudo apt-get update
-    sudo apt-get install --reinstall ros-noetic-moveit ros-noetic-moveit-kinematics
+    sudo apt-get install ros-noetic-moveit ros-noetic-moveit-kinematics ros-noetic-joint-trajectory-controller ros-noetic-gazebo-*
+    
+If catkin_make gives errors about missing make recipes for some libraries, try to execute the above install with 
+the --reinstall flag to make sure you have the latest version of the packages.
 
 The package can then be installed as any other ROS package:
 
