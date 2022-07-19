@@ -108,7 +108,7 @@ class EdoMoveGroupInterface(object):
                             "args" : ['joint', 'angle'],
                             "types" : [int, float],
                             "callback" : self.move_joint },
-            "set_gripper" :  { "desc" : "Sets the gripper's span to the given width in millimeters.",
+            "set_gripper" :  { "desc" : "Sets the gripper's span to the given width in meters.",
                         "args" : ['width'],
                         "types" : [float],
                         "callback" : self.set_gripper_span },
