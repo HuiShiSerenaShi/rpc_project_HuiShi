@@ -73,6 +73,10 @@ both ROS and the workspace must be sourced by executing:
 
     source {PATH_TO_ROS}/setup.bash && source ~/catkin_ws/devel/setup.bash
 
+where {PATH_TO_ROS} is the path of the ROS installation, typically:
+
+    /opt/ros/noetic/
+
 ### Standalone execution
 
 <p align="center">
