@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python2
 
 import rospy
 
@@ -8,7 +8,7 @@ from std_msgs.msg import Float32, Float64, Int8
 
 class EdoGripperControl(object):
 
-    def __init__(self) -> None:
+    def __init__(self):
         super(EdoGripperControl, self).__init__()
         rospy.init_node("edo_gripper_node", anonymous=True)
         # Node subscribers
@@ -40,7 +40,7 @@ class EdoGripperControl(object):
         state_msg.data = self.gripper_moving
         self.gripper_state_pub.publish(state_msg)
 
-    def on_set_gripper_span_msg(self, msg: Float32):
+    def on_set_gripper_span_msg(self, msg):
         # Sanity check on the given span
         if msg.data <= 0:
             self.desired_span = 0
@@ -51,7 +51,7 @@ class EdoGripperControl(object):
         # Move the gripper to the desired span
         self.set_gripper_span(self.desired_span)
 
-    def on_joint_state_msg(self, msg: JointState):
+    def on_joint_state_msg(self, msg):
         # we are only looking for one of the current angles for the base joint
         base_angle = 0
         found = False
@@ -67,7 +67,9 @@ class EdoGripperControl(object):
         self.current_span = (-(base_angle - 29.72)/0.7428) / 1000
 
     def set_gripper_span(self, span):
-        rospy.logdebug(f"Set span: {self.desired_span}")
+        #rospy.logdebug(f"Set span: {self.desired_span}")
+        rospy.logdebug("Set span: {}".format(self.desired_span))
+
         self.current_span = span
         span *= 1000
         # this magic formula comes from manually measuring the distance and angle and create a trend line using excel

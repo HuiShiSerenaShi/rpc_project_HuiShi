@@ -4,8 +4,8 @@
   <version>1.0.0</version>
   <description>Package implementing a MoveIt! MoveGroupInterface for the control of a Comau eDo robotic arm.</description>
 
-  <maintainer email="lorenzo.busellato_02@studenti.univr.it">Lorenzo Busellato</maintainer>
-  <maintainer email="michel.valentini@studenti.univr.it">Michel Valentini</maintainer>
+  <maintainer email="hui.shi@studenti.univr.it">Hui Shi</maintainer>
+
 
   <license>BSD</license>
 

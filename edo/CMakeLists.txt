@@ -4,6 +4,7 @@ project(edo)
 find_package(catkin REQUIRED COMPONENTS
   geometry_msgs
   moveit_commander
+  moveit_ros_planning_interface
   moveit_msgs
   rospy
   std_msgs
@@ -15,7 +16,8 @@ find_package(catkin REQUIRED COMPONENTS
   tf2_kdl
   tf2_eigen
 )
-moveit_build_options()
+
+#moveit_build_options()
 
 find_package(LAPACK REQUIRED)
 

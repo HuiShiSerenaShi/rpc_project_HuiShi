@@ -1,13 +1,24 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python2
 
 from geometry_msgs.msg import Pose, PoseStamped
-from math import dist, fabs, cos
+#from math import dist, fabs, cos
+from math import fabs, cos
 from moveit_commander.conversions import pose_to_list
-from typing import Union
+#from typing import Union
+from math import sqrt
 
-def all_close(goal: Union["list[float]", Pose, PoseStamped], 
-            actual: Union["list[float]", Pose, PoseStamped], 
-            tolerance: float) -> bool:
+def euclidean_distance_3d(point1, point2):
+    """
+    Calculate the Euclidean distance between two 3D points represented as tuples (x, y, z).
+    """
+    return sqrt((point1[0] - point2[0]) ** 2 + (point1[1] - point2[1]) ** 2 + (point1[2] - point2[2]) ** 2)
+
+
+# def all_close(goal: Union["list[float]", Pose, PoseStamped], 
+#             actual: Union["list[float]", Pose, PoseStamped], 
+#             tolerance: float) -> bool:
+
+def all_close(goal, actual, tolerance):
     """
     Convenience method for testing if the values in two lists are within a 
     tolerance of each other. For Pose and PoseStamped inputs, the angle 
@@ -41,14 +52,16 @@ def all_close(goal: Union["list[float]", Pose, PoseStamped],
         x0, y0, z0, qx0, qy0, qz0, qw0 = pose_to_list(actual)
         x1, y1, z1, qx1, qy1, qz1, qw1 = pose_to_list(goal)
         # Euclidean distance
-        d = dist((x1, y1, z1), (x0, y0, z0))
+        # d = dist((x1, y1, z1), (x0, y0, z0))
+        d = euclidean_distance_3d((x1, y1, z1), (x0, y0, z0))
         # phi = angle between orientations
         cos_phi_half = fabs(qx0 * qx1 + qy0 * qy1 + qz0 * qz1 + qw0 * qw1)
         return d <= tolerance and cos_phi_half >= cos(tolerance / 2.0)
 
     return True
 
-def round_list(list: "list[float]", digits: int=3) -> "list[float]":
+#def round_list(list: "list[float]", digits: int=3) -> "list[float]":
+def round_list(list, digits=3):
     """
     Convenience method for rounding all the elements of a list to a given number
     of digits.

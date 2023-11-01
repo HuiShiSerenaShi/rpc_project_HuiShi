@@ -1,3 +1,9 @@
+# This branch works on ROS melodic and Python2.7.1
+
+This branch has the same functionalities as the master's branch. The difference is that this branch works on ROS melodic (paired with Ubuntu 18.04) and Python2.7.1 while the master branch works on ROS noetic (paired with Ubuntu 20.04) and Python3.
+
+Below is the original README.md from the master's branch, note to replace noetic with melodic in the installation & setup steps.
+
 # MoveIt interface for a simulated COMAU e.DO™ manipulator
 
 <p align="center">
@@ -15,27 +21,29 @@ robot's joints.
 
 ## Table Of Contents
 
-- [MoveIt interface for a simulated COMAU e.DO™ manipulator](#moveit-interface-for-a-simulated-comau-edo--manipulator)
-  * [Setup](#setup)
-  * [Usage](#usage)
-    + [Standalone execution](#standalone-execution)
-    + [Execution with Rviz](#execution-with-rviz)
-    + [Execution with rqt GUI](#execution-with-rqt-gui)
-    + [Terminating the execution](#terminating-the-execution)
-  * [Example tasks](#example-tasks)
-    + [Pick and place](#pick-and-place)
-    + [Cartesian path planning](#cartesian-path-planning)
-  * [Implementation details](#implementation-details)
-    + [Workspace modeling and URDF integration](#workspace-modeling-and-urdf-integration)
-    + [MoveGroupInterface implementation](#movegroupinterface-implementation)
-    + [IKFast inverse kinematics plugin](#ikfast-inverse-kinematics-plugin)
-    + [EdoGripper](#edogripper)
-    + [Gazebo Grasp Fix Plugin](#gazebo-grasp-fix-plugin)
-    + [EdoConsole](#edoconsole)
-    + [rqt_joint_trajectory_controller](#rqt-joint-trajectory-controller)
-    + [Pick and place sample task](#pick-and-place-sample-task)
-    + [Cartesian path planning sample task](#cartesian-path-planning-sample-task)
-  * [Acknowledgements](#acknowledgements)
+- [This branch works on ROS melodic and Python2.7.1](#this-branch-works-on-ros-melodic-and-python271)
+- [MoveIt interface for a simulated COMAU e.DO™ manipulator](#moveit-interface-for-a-simulated-comau-edo-manipulator)
+  - [Table Of Contents](#table-of-contents)
+  - [Setup](#setup)
+  - [Usage](#usage)
+    - [Standalone execution](#standalone-execution)
+    - [Execution with Rviz](#execution-with-rviz)
+    - [Execution with rqt GUI](#execution-with-rqt-gui)
+    - [Terminating the execution](#terminating-the-execution)
+  - [Sample tasks](#sample-tasks)
+    - [Pick and place](#pick-and-place)
+    - [Cartesian path planning](#cartesian-path-planning)
+  - [Implementation details](#implementation-details)
+    - [Workspace modeling and URDF integration](#workspace-modeling-and-urdf-integration)
+    - [MoveGroupInterface implementation](#movegroupinterface-implementation)
+    - [IKFast inverse kinematics plugin](#ikfast-inverse-kinematics-plugin)
+    - [EdoGripper](#edogripper)
+    - [Gazebo Grasp Fix Plugin](#gazebo-grasp-fix-plugin)
+    - [EdoConsole](#edoconsole)
+    - [rqt_joint_trajectory_controller](#rqt_joint_trajectory_controller)
+    - [Pick and place sample task](#pick-and-place-sample-task)
+    - [Cartesian path planning sample task](#cartesian-path-planning-sample-task)
+  - [Acknowledgements](#acknowledgements)
 
 ## Setup
 

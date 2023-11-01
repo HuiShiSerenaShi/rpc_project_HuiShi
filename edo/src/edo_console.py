@@ -1,11 +1,11 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python2
 
 import rospy
 import threading
 
 class EdoConsole(object):
 
-    def __init__(self, commands) -> None:
+    def __init__(self, commands):
         super(EdoConsole, self).__init__()
 
         self.commands = commands
@@ -33,19 +33,21 @@ class EdoConsole(object):
         self.help()
         while True:
             # Get input
-            m = input("> ").lower()
+            m = raw_input("> ").lower()
             m = m.split(" ")
             cmd = m[0]
             # Check if we know the command
             if cmd not in self.commands:
-                rospy.loginfo(f"Unrecognized command: '{cmd}'.")
+                #rospy.loginfo(f"Unrecognized command: '{cmd}'.")
+                rospy.loginfo("Unrecognized command: '{0}'.".format(cmd))
             else:
                 args = self.commands[cmd]['args']
                 types = self.commands[cmd]['types']
                 callback = self.commands[cmd]['callback']
                 # Check if enough arguments were supplied
                 if len(m) - 1 != len(args):
-                    rospy.loginfo(f"Not enough arguments for command: '{cmd}'.")
+                    rospy.loginfo("Not enough arguments for command: '{0}'.".format(cmd))
+                    #rospy.loginfo(f"Not enough arguments for command: '{cmd}'.")
                 else:
                     cmd_args = m[1:]
                     if len(cmd_args) != 0:
@@ -65,9 +67,10 @@ class EdoConsole(object):
                             elif len(typed_cmd_args) == 4:
                                 callback(typed_cmd_args[0], typed_cmd_args[1], typed_cmd_args[2], typed_cmd_args[3])
                             else:
-                                rospy.loginfo(f"Unimplemented command.")
+                                rospy.loginfo("Unimplemented command.")
                         except ValueError:
-                            rospy.loginfo(f"Wrong type for argument '{args[i]}': expected {types[i].__name__}, got string.")
+                            #rospy.loginfo(f"Wrong type for argument '{args[i]}': expected {types[i].__name__}, got string.")
+                            rospy.loginfo("Wrong type for argument '{0}': expected {1}, got string.".format(args[i], types[i].__name__))
                     else:
                         # No arguments needed, just call the method
                         callback()
